@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+
+    container_name: pulse_monitor_db
+
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: pulse_monitor
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
