@@ -22,7 +22,11 @@ import {
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-export function CreateMonitorForm() {
+
+interface Props {
+  onSuccess?: () => void;
+}
+export function CreateMonitorForm({ onSuccess }: Props) {
   const router = useRouter();
 
   const [isPending, startTransition] =
@@ -51,12 +55,7 @@ export function CreateMonitorForm() {
         );
         console.log(reset);
 
-      if (
-        result.status === "success"
-      ) {
-        reset();
-        router.refresh();
-      }
+result.status === "success"
     });
   };
 
