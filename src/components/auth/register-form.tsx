@@ -35,7 +35,7 @@ export function RegisterForm() {
     setAuthError("");
     const result = await registerAction(values);
 
-    if (!result.success && result.message) {
+    if (result.status=='error') {
       setAuthError(result.message);
       return;
     }

@@ -38,7 +38,7 @@ export function LoginForm() {
 
     const validationResult = await loginAction(values);
 
-    if (!validationResult.success && validationResult.message) {
+    if (validationResult.status == 'error') {
       setAuthError(validationResult.message);
       return;
     }

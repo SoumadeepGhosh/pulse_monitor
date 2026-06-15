@@ -1,58 +1,43 @@
 "use server";
 
-import { AuthService } from "@/services/auth.service";
-import { LoginSchema, RegisterInput, RegisterSchema } from "@/validations/auth.validation";
+import { registerUser, validateCredentials } from "@/services/auth.service";
+import { AppResponseWrapper, createErrorResponse } from "@/types/common.type";
+import { LoginInput, LoginSchema, RegisterInput, RegisterSchema } from "@/validations/auth.validation";
+import { User } from "../../generated/prisma/client";
 
 export async function registerAction(
   values: RegisterInput
-) {
+) : Promise<AppResponseWrapper<User | null>> {
   const parsed =
     RegisterSchema.safeParse(values);
 
   if (!parsed.success) {
-    return {
-      success: false,
-      errors:
-        parsed.error.flatten().fieldErrors,
-    };
-  }
-
-  try {
-    await AuthService.registerUser(
-      parsed.data
+    return createErrorResponse(
+      parsed.error.issues[0]?.message ??
+        "Validation failed",
     );
-
-    return {
-      success: true,
-    };
-  } catch (error) {
-    return {
-      success: false,
-      message:
-        error instanceof Error
-          ? error.message
-          : "Something went wrong",
-    };
   }
+
+  return registerUser(
+    parsed.data,
+  );
 }
 
 
 export async function loginAction(
-  values: unknown
-) {
+  values: LoginInput
+): Promise<AppResponseWrapper<User>> {
   const parsed = LoginSchema.safeParse(values);
 
   if (!parsed.success) {
-    return {
-      success: false,
-      message:
-        parsed.error.issues[0]?.message ??
+    return createErrorResponse(
+      parsed.error.issues[0]?.message ??
         "Validation failed",
-    };
+    );
   }
 
-  return AuthService.validateCredentials(
+  return validateCredentials(
     parsed.data.email,
-    parsed.data.password
+    parsed.data.password,
   );
 }

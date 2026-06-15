@@ -33,8 +33,9 @@ model Monitor {
   id              Int            @id @default(autoincrement())
   userId          Int
   name            String
-  url             String
-  method          String         @default("GET")
+  url             String         @unique
+  method          HttpMethod
+  status          MonitorStatus  @default(UNKNOWN)
   intervalMinutes Int
   isActive        Boolean        @default(true)
   lastCheckedAt   DateTime?
@@ -72,6 +73,20 @@ model Notification {
   monitor   Monitor          @relation(fields: [monitorId], references: [id], onDelete: Cascade)
 
   @@index([monitorId])
+}
+
+
+enum HttpMethod {
+  GET
+  POST
+  PUT
+  DELETE
+  PATCH
+}
+enum MonitorStatus {
+  UP
+  DOWN
+  UNKNOWN
 }
 
 enum NotificationType {

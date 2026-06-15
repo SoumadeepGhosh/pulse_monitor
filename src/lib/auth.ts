@@ -5,7 +5,7 @@ import Credentials from "next-auth/providers/credentials";
 import { z } from "zod";
 
 import { prisma } from "@/lib/prisma";
-import { AuthService } from "@/services/auth.service";
+import { validateCredentials } from "@/services/auth.service";
 
 const CredentialsSchema = z.object({
   email: z.string().email(),
@@ -46,22 +46,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             return null;
           }
 
-          const result = await AuthService.validateCredentials(
+          const result = await validateCredentials(
             parsed.data.email,
             parsed.data.password,
           );
-
-          if (!result.success || !result.user) {
+          if (result.status == 'error' || !result.data) {
             return null;
           }
 
           return {
-            id: String(result.user.id),
-            email: result.user.email,
-            name: result.user.name,
+            id: String(result.data.id),
+            email: result.data.email,
+            name: result.data.name,
           };
         } catch (error) {
-          console.error("Credentials Auth Error:", error);
           return null;
         }
       },
