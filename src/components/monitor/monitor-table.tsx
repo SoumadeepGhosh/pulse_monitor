@@ -17,15 +17,11 @@ interface Props {
   monitors: Monitor[];
 }
 
-export function MonitorTable({
-  monitors,
-}: Props) {
+export function MonitorTable({ monitors }: Props) {
   if (!monitors.length) {
     return (
       <div className="flex h-40 items-center justify-center rounded-xl border bg-card">
-        <p className="text-sm text-muted-foreground">
-          No monitors found.
-        </p>
+        <p className="text-sm text-muted-foreground">No monitors found.</p>
       </div>
     );
   }
@@ -35,108 +31,67 @@ export function MonitorTable({
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>
-              Monitor Name
-            </TableHead>
+            <TableHead>Monitor Name</TableHead>
 
-            <TableHead>
-              URL
-            </TableHead>
+            <TableHead>URL</TableHead>
 
-            <TableHead>
-              Status
-            </TableHead>
+            <TableHead>Status</TableHead>
 
-            <TableHead>
-              Active
-            </TableHead>
+            <TableHead>Active</TableHead>
 
-            <TableHead>
-              Interval
-            </TableHead>
+            <TableHead>Interval</TableHead>
 
-            <TableHead>
-              Last Checked
-            </TableHead>
+            <TableHead>Last Checked</TableHead>
 
-            <TableHead className="w-[80px] text-right">
-              Actions
-            </TableHead>
+            <TableHead className="w-20 text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
 
         <TableBody>
-          {monitors.map(
-            (monitor) => (
-              <TableRow
-                key={monitor.id}
-              >
-                <TableCell className="font-medium">
-                  {monitor.name}
-                </TableCell>
+          {monitors.map((monitor) => (
+            <TableRow key={monitor.id}>
+              <TableCell className="font-medium">{monitor.name}</TableCell>
 
-                <TableCell className="max-w-[300px] truncate">
-                  {monitor.url}
-                </TableCell>
+              <TableCell className="max-w-75 truncate">
+                {monitor.url}
+              </TableCell>
 
-                <TableCell>
-                  <Badge
-                    variant={
-                      monitor.status ===
-                      "UP"
-                        ? "default"
-                        : monitor.status ===
-                            "DOWN"
-                          ? "destructive"
-                          : "secondary"
-                    }
-                  >
-                    {monitor.status}
-                  </Badge>
-                </TableCell>
-
-                <TableCell>
-                  <Badge
-                    variant={
-                      monitor.isActive
-                        ? "default"
+              <TableCell>
+                <Badge
+                  variant={
+                    monitor.status === "UP"
+                      ? "default"
+                      : monitor.status === "DOWN"
+                        ? "destructive"
                         : "secondary"
-                    }
-                  >
-                    {monitor.isActive
-                      ? "Active"
-                      : "Inactive"}
-                  </Badge>
-                </TableCell>
+                  }
+                >
+                  {monitor.status}
+                </Badge>
+              </TableCell>
 
-                <TableCell>
-                  {
-                    monitor.intervalMinutes
-                  }{" "}
-                  min
-                </TableCell>
+              <TableCell>
+                <Badge variant={monitor.isActive ? "default" : "secondary"}>
+                  {monitor.isActive ? "Active" : "Inactive"}
+                </Badge>
+              </TableCell>
 
-                <TableCell>
-                  {monitor.lastCheckedAt
-                    ? new Date(
-                        monitor.lastCheckedAt
-                      ).toLocaleString()
-                    : "Never"}
-                </TableCell>
+              <TableCell>{monitor.intervalMinutes} min</TableCell>
 
-                <TableCell className="text-right">
-                  <MonitorActions
-                    monitorId={
-                      monitor.id
-                    }
-                    isActive={
-                      monitor.isActive
-                    }
-                  />
-                </TableCell>
-              </TableRow>
-            )
-          )}
+              <TableCell>
+                {monitor.lastCheckedAt
+                  ? new Date(monitor.lastCheckedAt).toLocaleString()
+                  : "Never"}
+              </TableCell>
+
+              <TableCell className="text-right">
+                <MonitorActions
+                  monitorId={monitor.id}
+                  isActive={monitor.isActive}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
         </TableBody>
       </Table>
     </div>

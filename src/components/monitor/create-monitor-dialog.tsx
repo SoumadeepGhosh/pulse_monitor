@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import {
   Dialog,
   DialogContent,
@@ -18,8 +20,14 @@ interface Props {
 export function CreateMonitorDialog({
   children,
 }: Props) {
+  const [open, setOpen] =
+    useState(false);
+
   return (
-    <Dialog>
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+    >
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
@@ -35,7 +43,11 @@ export function CreateMonitorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <CreateMonitorForm />
+        <CreateMonitorForm
+          onSuccess={() =>
+            setOpen(false)
+          }
+        />
       </DialogContent>
     </Dialog>
   );

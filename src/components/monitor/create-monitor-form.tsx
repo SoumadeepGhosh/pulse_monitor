@@ -3,107 +3,88 @@
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 
-import {
-  useForm,
-} from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
-  zodResolver,
-} from "@hookform/resolvers/zod";
-
-import {
-  CreateMonitorSchema,
   CreateMonitorInput,
+  CreateMonitorSchema,
 } from "@/validations/monitor.validation";
 
-import {
-  createMonitorAction,
-} from "@/actions/monitor.action";
+import { createMonitorAction } from "@/actions/monitor.action";
 
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface Props {
   onSuccess?: () => void;
 }
+
 export function CreateMonitorForm({ onSuccess }: Props) {
   const router = useRouter();
 
-  const [isPending, startTransition] =
-    useTransition();
+  const [isPending, startTransition] = useTransition();
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-  } = useForm<CreateMonitorInput>({
-    resolver:
-      zodResolver(CreateMonitorSchema),
+  const { register, handleSubmit, reset } = useForm<CreateMonitorInput>({
+    resolver: zodResolver(CreateMonitorSchema),
     defaultValues: {
       method: "GET",
       intervalMinutes: 5,
     },
   });
 
-  const onSubmit = (
-    values: CreateMonitorInput
-  ) => {
+  const onSubmit = (values: CreateMonitorInput) => {
     startTransition(async () => {
-      const result =
-        await createMonitorAction(
-          values
-        );
-        console.log(reset);
+      const result = await createMonitorAction({
+        ...values,
+        method: "GET",
+      });
 
-result.status === "success"
+      console.log("Create Result:", result);
+
+      if (result.status === "success") {
+        reset();
+
+        router.refresh();
+
+        onSuccess?.();
+      }
+
+      console.log(result);
     });
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(
-        onSubmit
-      )}
-      className="mb-8 rounded-lg border p-4"
-    >
-      <h2 className="mb-4 font-semibold">
-        Create Monitor
-      </h2>
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Monitor Name</label>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Input
-          placeholder="Name"
-          {...register("name")}
-        />
+        <Input placeholder="Backend Health API" {...register("name")} />
+      </div>
+
+      <div className="space-y-2">
+        <label className="text-sm font-medium">URL</label>
 
         <Input
-          placeholder="URL"
+          placeholder="https://api.example.com/health"
           {...register("url")}
-        />
-
-        <Input
-          placeholder="GET"
-          {...register("method")}
-        />
-
-        <Input
-          type="number"
-          {...register(
-            "intervalMinutes",
-            {
-              valueAsNumber: true,
-            }
-          )}
         />
       </div>
 
-      <Button
-        className="mt-4"
-        disabled={isPending}
-      >
-        {isPending
-          ? "Creating..."
-          : "Create"}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Check Interval (Minutes)</label>
+
+        <Input
+          type="number"
+          min={1}
+          {...register("intervalMinutes", {
+            valueAsNumber: true,
+          })}
+        />
+      </div>
+
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? "Creating..." : "Create Monitor"}
       </Button>
     </form>
   );
