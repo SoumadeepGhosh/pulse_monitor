@@ -32,7 +32,7 @@ export function MonitorCard({
             </span>
 
             <span>
-              UNKNOWN
+              {monitor.status}
             </span>
           </div>
         </div>

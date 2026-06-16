@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Monitor } from "../../generated/prisma/client";
 import { determineMonitorStatus } from "@/lib/monitor-status-config";
 
-export async function checkMonitor(
+export async function applyCheckResult(
     monitorId: number
 ): Promise<void> {
     const monitor =
@@ -69,7 +69,7 @@ export async function checkMonitor(
     }
 }
 
-async function getConsecutiveResults(
+async function getConsecutiveCheckResults(
   monitorId: number,
   limit = 10,
 ) {
@@ -86,7 +86,7 @@ async function getConsecutiveResults(
 
 async function changeMonitorStatus(monitor: Monitor) {
 
-  const checkResults = await getConsecutiveResults(
+  const checkResults = await getConsecutiveCheckResults(
     monitor.id,
   );
 

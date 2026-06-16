@@ -37,3 +37,14 @@ export type CreateMonitorInput =
 
 export type UpdateMonitorInput =
   z.infer<typeof UpdateMonitorSchema>;
+
+
+export const ChangeMonitorStatusSchema =
+  z.object({
+    monitorId: z.number()
+  });
+
+export type ChangeMonitorStatusInput =
+  z.infer<
+    typeof ChangeMonitorStatusSchema
+  >;

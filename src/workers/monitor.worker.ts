@@ -3,7 +3,7 @@ import { Worker } from "bullmq";
 import { redis } from "@/lib/redis";
 
 import { MonitorJobData } from "@/types/job.type";
-import { checkMonitor } from "@/services/check-result.service";
+import { applyCheckResult } from "@/services/check-result.service";
 import { MONITOR_QUEUE } from "@/queues/monitor.queue";
 
 export const monitorWorker =
@@ -11,7 +11,7 @@ export const monitorWorker =
     MONITOR_QUEUE,
 
     async (job) => {
-      await checkMonitor(
+      await applyCheckResult(
         job.data.monitorId,
       );
     },
