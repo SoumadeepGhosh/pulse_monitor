@@ -1,6 +1,5 @@
 "use client";
 
-import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { useForm } from "react-hook-form";
@@ -16,6 +15,16 @@ import { createMonitorAction } from "@/actions/monitor.action";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { toast } from "sonner";
+
 interface Props {
   onSuccess?: () => void;
 }
@@ -23,69 +32,102 @@ interface Props {
 export function CreateMonitorForm({ onSuccess }: Props) {
   const router = useRouter();
 
-  const [isPending, startTransition] = useTransition();
-
-  const { register, handleSubmit, reset } = useForm<CreateMonitorInput>({
+  const form = useForm<CreateMonitorInput>({
     resolver: zodResolver(CreateMonitorSchema),
     defaultValues: {
+      name: "",
+      url: "",
       method: "GET",
       intervalMinutes: 5,
     },
   });
 
-  const onSubmit = (values: CreateMonitorInput) => {
-    startTransition(async () => {
-      const result = await createMonitorAction({
-        ...values,
-        method: "GET",
-      });
+  const onSubmit = async (values: CreateMonitorInput) => {
+    const result = await createMonitorAction(values);
 
-      console.log("Create Result:", result);
+    if (result.status === "error") {
+      toast.error(result.message);
 
-      if (result.status === "success") {
-        reset();
-
-        router.refresh();
-
-        onSuccess?.();
-      }
-
-      console.log(result);
-    });
+      return;
+    }
+    toast.success(result.message);
+    form.reset();
+    router.refresh();
+    onSuccess?.();
   };
-
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Monitor Name</label>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Monitor Name</FormLabel>
 
-        <Input placeholder="Backend Health API" {...register("name")} />
-      </div>
+              <FormControl>
+                <Input placeholder="Backend Health API" {...field} />
+              </FormControl>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">URL</label>
-
-        <Input
-          placeholder="https://api.example.com/health"
-          {...register("url")}
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="space-y-2">
-        <label className="text-sm font-medium">Check Interval (Minutes)</label>
+        <FormField
+          control={form.control}
+          name="url"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>URL</FormLabel>
 
-        <Input
-          type="number"
-          min={1}
-          {...register("intervalMinutes", {
-            valueAsNumber: true,
-          })}
+              <FormControl>
+                <Input
+                  placeholder="https://api.example.com/health"
+                  {...field}
+                />
+              </FormControl>
+
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "Creating..." : "Create Monitor"}
-      </Button>
-    </form>
+        <FormField
+          control={form.control}
+          name="intervalMinutes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Check Interval (Minutes)</FormLabel>
+
+              <FormControl>
+                <Input
+                  type="number"
+                  min={1}
+                  value={field.value}
+                  onChange={(e) => field.onChange(Number(e.target.value))}
+                />
+              </FormControl>
+
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {form.formState.errors.root && (
+          <p className="text-sm text-red-500">
+            {form.formState.errors.root?.message}
+          </p>
+        )}
+
+        <Button
+          type="submit"
+          className="w-full"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Creating..." : "Create Monitor"}
+        </Button>
+      </form>
+    </Form>
   );
 }

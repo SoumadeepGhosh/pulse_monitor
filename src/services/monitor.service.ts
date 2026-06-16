@@ -27,14 +27,13 @@ import { removeMonitor, scheduleMonitor } from "./queue.service";
           intervalMinutes: data.intervalMinutes,
         },
       });
-
-      await scheduleMonitor(
+      console.log("Monitor created");
+      scheduleMonitor(
         {
           monitorId: monitor.id,
         },
         monitor.intervalMinutes,
       );
-
       return createSuccessResponse(
         "Monitor created successfully",
         monitor,
@@ -87,7 +86,7 @@ import { removeMonitor, scheduleMonitor } from "./queue.service";
             userId,
           },
         });
-
+      console.log("Monitor deleted");
       if (!monitor) {
         return createErrorResponse(
           "Monitor not found",
@@ -100,7 +99,7 @@ import { removeMonitor, scheduleMonitor } from "./queue.service";
         },
       });
 
-      await removeMonitor({
+      removeMonitor({
         monitorId,
       });
 
