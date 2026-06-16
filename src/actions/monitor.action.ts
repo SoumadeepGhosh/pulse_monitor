@@ -2,13 +2,15 @@
 
 import { auth } from "@/lib/auth";
 
-import { createMonitor, getUserMonitors, deleteMonitor, updateMonitor } from "@/services/monitor.service";
+import { createMonitor, getUserMonitors, deleteMonitor, updateMonitor, changeMonitorStatus } from "@/services/monitor.service";
 
 import {
   CreateMonitorInput,
   UpdateMonitorInput,
   CreateMonitorSchema,
   UpdateMonitorSchema,
+  ChangeMonitorStatusInput,
+  ChangeMonitorStatusSchema,
 } from "@/validations/monitor.validation";
 
 import { AppResponseWrapper, createErrorResponse } from "@/types/common.type";
@@ -94,5 +96,37 @@ export async function updateMonitorAction(
   return updateMonitor(
     Number(session.user.id),
     parsed.data,
+  );
+}
+
+export async function changeMonitorStatusAction(
+  data: ChangeMonitorStatusInput,
+): Promise<
+  AppResponseWrapper<Monitor>
+> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return createErrorResponse<Monitor>(
+      "Unauthorized",
+    );
+  }
+
+  const parsed =
+    ChangeMonitorStatusSchema.safeParse(
+      data,
+    );
+
+  if (!parsed.success) {
+    return createErrorResponse<Monitor>(
+      parsed.error.issues[0]
+        ?.message ??
+        "Validation failed",
+    );
+  }
+
+  return changeMonitorStatus(
+    parsed.data.monitorId,
+    Number(session.user.id)
   );
 }

@@ -1,7 +1,7 @@
 import { monitorQueue } from "@/queues/monitor.queue";
 import { MonitorJobData } from "@/types/job.type";
 
-export async function scheduleMonitor(
+export async function scheduleJobToMonitorQueue(
   data: MonitorJobData,
   intervalMinutes: number,
 ) {
@@ -20,6 +20,6 @@ export async function scheduleMonitor(
   );
 }
 
-export async function removeMonitor(data: MonitorJobData,) {
+export async function removeJobFromMonitorQueue(data: MonitorJobData,) {
   await monitorQueue.removeJobScheduler(`monitor-${data.monitorId}`);
 }

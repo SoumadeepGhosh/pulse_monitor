@@ -1,19 +1,36 @@
 "use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-import { MoreHorizontal, Eye, Trash2, Play, Pause } from "lucide-react";
+import { Eye, Trash2, Ellipsis } from "lucide-react";
+
+import { toast } from "sonner";
 
 import { deleteMonitorAction } from "@/actions/monitor.action";
 
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Props {
   monitorId: number;
@@ -23,67 +40,122 @@ interface Props {
 export function MonitorActions({ monitorId, isActive }: Props) {
   const router = useRouter();
 
-  const handleDelete = async () => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this monitor?",
-    );
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
 
-    if (!confirmed) return;
+  const [isDeleting, setIsDeleting] = useState(false);
 
-    const result = await deleteMonitorAction(monitorId);
+  const handleMonitorStatusToggle = async () => {
+    try {
+      /**
+       * Future
+       *
+       * const result =
+       *   await toggleMonitorStatusAction(
+       *     monitorId
+       *   );
+       *
+       * if (result.status === "error") {
+       *   toast.error(result.message);
+       *   return;
+       * }
+       *
+       * toast.success(result.message);
+       * router.refresh();
+       */
 
-    if (result.status === "success") {
-      router.refresh();
+      toast.info(`Monitor ${isActive ? "deactivated" : "activated"}`);
+    } catch {
+      toast.error("Failed to update monitor status");
     }
   };
 
-  const handleToggle = async () => {
-    console.log(`Monitor ${monitorId} ${isActive ? "Deactivate" : "Activate"}`);
+  const handleDelete = async () => {
+    try {
+      setIsDeleting(true);
 
-    /**
-     * await toggleMonitorAction(
-     *   monitorId
-     * );
-     *
-     * router.refresh();
-     */
+      const result = await deleteMonitorAction(monitorId);
+
+      if (result.status === "error") {
+        toast.error(result.message);
+
+        return;
+      }
+
+      toast.success(result.message);
+
+      router.refresh();
+
+      setDeleteDialogOpen(false);
+    } catch {
+      toast.error("Failed to delete monitor");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <MoreHorizontal className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon">
+            <Ellipsis className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
 
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={handleToggle}>
-          {isActive ? (
-            <>
-              <Pause className="mr-2 h-4 w-4" />
-              Deactivate
-            </>
-          ) : (
-            <>
-              <Play className="mr-2 h-4 w-4" />
-              Activate
-            </>
-          )}
-        </DropdownMenuItem>
+        <DropdownMenuContent align="end" className="w-56">
+          <DropdownMenuItem asChild>
+            <Link href={`/monitor/${monitorId}`}>
+              <Eye className="mr-2 h-4 w-4" />
+              View Details
+            </Link>
+          </DropdownMenuItem>
 
-        <DropdownMenuItem asChild>
-          <Link href={`/monitor/${monitorId}`}>
-            <Eye className="mr-2 h-4 w-4" />
-            View Details
-          </Link>
-        </DropdownMenuItem>
+          <DropdownMenuSeparator />
 
-        <DropdownMenuItem onClick={handleDelete} className="text-red-600">
-          <Trash2 className="mr-2 h-4 w-4" />
-          Delete
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          <DropdownMenuItem
+            className="flex items-center justify-between"
+            onSelect={(e) => e.preventDefault()}
+          >
+            <span>{isActive ? "Active" : "Inactive"}</span>
+
+            <Switch
+              checked={isActive}
+              onCheckedChange={handleMonitorStatusToggle}
+            />
+          </DropdownMenuItem>
+
+          <DropdownMenuSeparator />
+
+          <DropdownMenuItem
+            className="text-red-600 focus:text-red-600"
+            onClick={() => setDeleteDialogOpen(true)}
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Monitor</AlertDialogTitle>
+
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the
+              monitor and remove its scheduler.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+              {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 }
