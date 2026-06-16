@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/prisma";
-import { Monitor } from "../../generated/prisma/client";
+import {
+  CheckResult,
+  Monitor,
+  Notification,
+} from "../../generated/prisma/client";
 
 import {
   CreateMonitorInput,
@@ -11,7 +15,58 @@ import {
   createErrorResponse,
   createSuccessResponse,
 } from "@/types/common.type";
-import { removeJobFromMonitorQueue, scheduleJobToMonitorQueue } from "./queue.service";
+import {
+  removeJobFromMonitorQueue,
+  scheduleJobToMonitorQueue,
+} from "./queue.service";
+
+export interface MonitorDetails {
+  monitor: Monitor;
+  checkResults: CheckResult[];
+  notifications: Notification[];
+}
+
+export async function getMonitorDetails(
+  monitorId: number,
+  userId: number,
+): Promise<AppResponseWrapper<MonitorDetails>> {
+  try {
+    const monitor = await prisma.monitor.findFirst({
+      where: {
+        id: monitorId,
+        userId,
+      },
+
+      include: {
+        checkResults: {
+          orderBy: {
+            checkedAt: "desc",
+          },
+          take: 50,
+        },
+
+        notifications: {
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 50,
+        },
+      },
+    });
+
+    if (!monitor) {
+      return createErrorResponse("Monitor not found");
+    }
+
+    return createSuccessResponse("Monitor fetched successfully", {
+      monitor,
+      checkResults: monitor.checkResults,
+      notifications: monitor.notifications,
+    });
+  } catch {
+    return createErrorResponse("Failed to fetch monitor");
+  }
+}
 
 export async function createMonitor(
   userId: number,
@@ -165,7 +220,7 @@ export async function changeMonitorStatus(
       },
     });
 
-    if(updatedMonitor.isActive) {
+    if (updatedMonitor.isActive) {
       await scheduleJobToMonitorQueue(
         {
           monitorId: updatedMonitor.id,

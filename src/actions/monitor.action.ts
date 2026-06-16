@@ -2,7 +2,15 @@
 
 import { auth } from "@/lib/auth";
 
-import { createMonitor, getUserMonitors, deleteMonitor, updateMonitor, changeMonitorStatus } from "@/services/monitor.service";
+import {
+  createMonitor,
+  getUserMonitors,
+  deleteMonitor,
+  updateMonitor,
+  changeMonitorStatus,
+  getMonitorDetails,
+  MonitorDetails,
+} from "@/services/monitor.service";
 
 import {
   CreateMonitorInput,
@@ -16,117 +24,98 @@ import {
 import { AppResponseWrapper, createErrorResponse } from "@/types/common.type";
 import { Monitor } from "../../generated/prisma/client";
 
-export async function createMonitorAction(
-  data: CreateMonitorInput,
-) : Promise<AppResponseWrapper<Monitor>> {
+export async function getMonitorDetailsAction(
+  monitorId: number,
+): Promise<AppResponseWrapper<MonitorDetails>> {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return createErrorResponse(
-      "Unauthorized",
-    );
+    return createErrorResponse("Unauthorized");
+  }
+
+  return getMonitorDetails(monitorId, Number(session.user.id));
+}
+
+export async function createMonitorAction(
+  data: CreateMonitorInput,
+): Promise<AppResponseWrapper<Monitor>> {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return createErrorResponse("Unauthorized");
   }
 
   const parsed = CreateMonitorSchema.safeParse(data);
 
   if (!parsed.success) {
     return createErrorResponse(
-      parsed.error.issues[0]?.message ??
-        "Validation failed",
+      parsed.error.issues[0]?.message ?? "Validation failed",
     );
   }
 
-  return createMonitor(
-    Number(session.user.id),
-    parsed.data,
-  );
+  return createMonitor(Number(session.user.id), parsed.data);
 }
 
-export async function getUserMonitorsAction() : Promise<AppResponseWrapper<Monitor[]>> {
+export async function getUserMonitorsAction(): Promise<
+  AppResponseWrapper<Monitor[]>
+> {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return createErrorResponse(
-      "Unauthorized",
-    );
+    return createErrorResponse("Unauthorized");
   }
 
-  return getUserMonitors(
-    Number(session.user.id),
-  );
+  return getUserMonitors(Number(session.user.id));
 }
 
 export async function deleteMonitorAction(
   monitorId: number,
-) : Promise<AppResponseWrapper<null>> {
+): Promise<AppResponseWrapper<null>> {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return createErrorResponse(
-      "Unauthorized",
-    );
+    return createErrorResponse("Unauthorized");
   }
 
-  return deleteMonitor(
-    monitorId,
-    Number(session.user.id),
-  );
+  return deleteMonitor(monitorId, Number(session.user.id));
 }
 
 export async function updateMonitorAction(
   data: UpdateMonitorInput,
-) : Promise<AppResponseWrapper<Monitor>> {
+): Promise<AppResponseWrapper<Monitor>> {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return createErrorResponse(
-      "Unauthorized",
-    );
+    return createErrorResponse("Unauthorized");
   }
 
   const parsed = UpdateMonitorSchema.safeParse(data);
 
   if (!parsed.success) {
     return createErrorResponse(
-      parsed.error.issues[0]?.message ??
-        "Validation failed",
+      parsed.error.issues[0]?.message ?? "Validation failed",
     );
   }
 
-  return updateMonitor(
-    Number(session.user.id),
-    parsed.data,
-  );
+  return updateMonitor(Number(session.user.id), parsed.data);
 }
 
 export async function changeMonitorStatusAction(
   data: ChangeMonitorStatusInput,
-): Promise<
-  AppResponseWrapper<Monitor>
-> {
+): Promise<AppResponseWrapper<Monitor>> {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return createErrorResponse<Monitor>(
-      "Unauthorized",
-    );
+    return createErrorResponse<Monitor>("Unauthorized");
   }
 
-  const parsed =
-    ChangeMonitorStatusSchema.safeParse(
-      data,
-    );
+  const parsed = ChangeMonitorStatusSchema.safeParse(data);
 
   if (!parsed.success) {
     return createErrorResponse<Monitor>(
-      parsed.error.issues[0]
-        ?.message ??
-        "Validation failed",
+      parsed.error.issues[0]?.message ?? "Validation failed",
     );
   }
 
-  return changeMonitorStatus(
-    parsed.data.monitorId,
-    Number(session.user.id)
-  );
+  return changeMonitorStatus(parsed.data.monitorId, Number(session.user.id));
 }

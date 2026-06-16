@@ -10,7 +10,10 @@ import {
   CreateMonitorSchema,
 } from "@/validations/monitor.validation";
 
-import { createMonitorAction } from "@/actions/monitor.action";
+import {
+  createMonitorAction,
+  updateMonitorAction,
+} from "@/actions/monitor.action";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,33 +29,44 @@ import {
 import { toast } from "sonner";
 
 interface Props {
+  defaultValues?: Partial<CreateMonitorInput>;
+  monitorId?: number;
   onSuccess?: () => void;
 }
 
-export function CreateMonitorForm({ onSuccess }: Props) {
+export function MonitorForm({ defaultValues, monitorId, onSuccess }: Props) {
   const router = useRouter();
 
   const form = useForm<CreateMonitorInput>({
     resolver: zodResolver(CreateMonitorSchema),
     defaultValues: {
-      name: "",
-      url: "",
-      method: "GET",
-      intervalMinutes: 5,
+      name: defaultValues?.name ?? "",
+      url: defaultValues?.url ?? "",
+      method: defaultValues?.method ?? "GET",
+      intervalMinutes: defaultValues?.intervalMinutes ?? 5,
     },
   });
 
   const onSubmit = async (values: CreateMonitorInput) => {
-    const result = await createMonitorAction(values);
+    const result = monitorId
+      ? await updateMonitorAction({
+          id: monitorId,
+          ...values,
+        })
+      : await createMonitorAction(values);
 
     if (result.status === "error") {
       toast.error(result.message);
 
       return;
     }
+
     toast.success(result.message);
+
     form.reset();
+
     router.refresh();
+
     onSuccess?.();
   };
   return (
@@ -119,13 +133,18 @@ export function CreateMonitorForm({ onSuccess }: Props) {
             {form.formState.errors.root?.message}
           </p>
         )}
-
         <Button
           type="submit"
           className="w-full"
           disabled={form.formState.isSubmitting}
         >
-          {form.formState.isSubmitting ? "Creating..." : "Create Monitor"}
+          {form.formState.isSubmitting
+            ? monitorId
+              ? "Updating..."
+              : "Creating..."
+            : monitorId
+              ? "Update Monitor"
+              : "Create Monitor"}
         </Button>
       </form>
     </Form>

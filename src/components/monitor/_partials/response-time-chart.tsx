@@ -9,16 +9,18 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import { CheckResult } from "../../../../generated/prisma/client";
 
-const data = [
-  { time: "10:00", responseTime: 120 },
-  { time: "10:05", responseTime: 135 },
-  { time: "10:10", responseTime: 110 },
-  { time: "10:15", responseTime: 180 },
-  { time: "10:20", responseTime: 145 },
-];
+interface Props {
+  checkResults: CheckResult[];
+}
 
-export function ResponseTimeChart() {
+export function ResponseTimeChart({ checkResults }: Props) {
+  const data = [...checkResults].reverse().map((result) => ({
+    time: new Date(result.checkedAt).toLocaleTimeString(),
+    responseTime: result.responseTime ?? 0,
+  }));
+
   return (
     <div className="rounded-xl border bg-card p-6">
       <h2 className="mb-4 text-lg font-semibold">Response Time History</h2>

@@ -8,7 +8,10 @@ import { Eye, Trash2, Ellipsis } from "lucide-react";
 
 import { toast } from "sonner";
 
-import { deleteMonitorAction } from "@/actions/monitor.action";
+import {
+  changeMonitorStatusAction,
+  deleteMonitorAction,
+} from "@/actions/monitor.action";
 
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -31,42 +34,37 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-
+import { Monitor } from "../../../generated/prisma/client";
+import { UpdateMonitorDialog } from "./update-monitor-dialog";
 interface Props {
-  monitorId: number;
-  isActive: boolean;
+  monitor: Monitor;
 }
 
-export function MonitorActions({ monitorId, isActive }: Props) {
+export function MonitorActions({ monitor }: Props) {
   const router = useRouter();
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-
+  const [deactivateDialogOpen, setDeactivateDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-
+  const { id: monitorId, isActive } = monitor;
   const handleMonitorStatusToggle = async () => {
-    try {
-      /**
-       * Future
-       *
-       * const result =
-       *   await toggleMonitorStatusAction(
-       *     monitorId
-       *   );
-       *
-       * if (result.status === "error") {
-       *   toast.error(result.message);
-       *   return;
-       * }
-       *
-       * toast.success(result.message);
-       * router.refresh();
-       */
-
-      toast.info(`Monitor ${isActive ? "deactivated" : "activated"}`);
-    } catch {
-      toast.error("Failed to update monitor status");
+    if (isActive) {
+      setDeactivateDialogOpen(true);
+      return;
     }
+
+    const result = await changeMonitorStatusAction({
+      monitorId,
+    });
+
+    if (result.status === "error") {
+      toast.error(result.message);
+      return;
+    }
+
+    toast.success(result.message);
+
+    router.refresh();
   };
 
   const handleDelete = async () => {
@@ -92,7 +90,23 @@ export function MonitorActions({ monitorId, isActive }: Props) {
       setIsDeleting(false);
     }
   };
+  const handleDeactivate = async () => {
+    const result = await changeMonitorStatusAction({
+      monitorId,
+    });
 
+    if (result.status === "error") {
+      toast.error(result.message);
+
+      return;
+    }
+
+    toast.success(result.message);
+
+    setDeactivateDialogOpen(false);
+
+    router.refresh();
+  };
   return (
     <>
       <DropdownMenu>
@@ -103,6 +117,10 @@ export function MonitorActions({ monitorId, isActive }: Props) {
         </DropdownMenuTrigger>
 
         <DropdownMenuContent align="end" className="w-56">
+          <UpdateMonitorDialog monitor={monitor} />
+
+          <DropdownMenuSeparator />
+
           <DropdownMenuItem asChild>
             <Link href={`/monitor/${monitorId}`}>
               <Eye className="mr-2 h-4 w-4" />
@@ -150,8 +168,38 @@ export function MonitorActions({ monitorId, isActive }: Props) {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
 
-            <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               {isDeleting ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog
+        open={deactivateDialogOpen}
+        onOpenChange={setDeactivateDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Deactivate Monitor</AlertDialogTitle>
+
+            <AlertDialogDescription>
+              This will stop all scheduled checks for this monitor. You can
+              reactivate it later at any time.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+
+            <AlertDialogAction
+              onClick={handleDeactivate}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Deactivate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

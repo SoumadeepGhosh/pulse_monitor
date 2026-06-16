@@ -1,14 +1,21 @@
 import { Card } from "@/components/ui/card";
+import { Monitor } from "../../../../generated/prisma/client";
 
-export function MonitorOverviewCard() {
+interface Props {
+  monitor: Monitor;
+}
+
+export function MonitorOverviewCard({
+  monitor,
+}: Props) {
   return (
     <Card className="p-6">
       <h1 className="text-3xl font-bold">
-        Backend Health API
+        {monitor.name}
       </h1>
 
       <p className="mt-2 text-muted-foreground">
-        https://api.example.com/health
+        {monitor.url}
       </p>
     </Card>
   );

@@ -11,7 +11,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { CreateMonitorForm } from "./create-monitor-form";
+import { MonitorForm } from "./monitor-form";
 
 interface Props {
   children: React.ReactNode;
@@ -43,7 +43,7 @@ export function CreateMonitorDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <CreateMonitorForm
+        <MonitorForm
           onSuccess={() =>
             setOpen(false)
           }

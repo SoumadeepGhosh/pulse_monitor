@@ -86,8 +86,7 @@ export function MonitorTable({ monitors }: Props) {
 
               <TableCell className="text-right">
                 <MonitorActions
-                  monitorId={monitor.id}
-                  isActive={monitor.isActive}
+                  monitor={monitor}
                 />
               </TableCell>
             </TableRow>
