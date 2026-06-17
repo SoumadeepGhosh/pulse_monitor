@@ -1,27 +1,18 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
-
 import {
   SidebarInset,
   SidebarProvider,
 } from "@/components/ui/sidebar";
 
-import { AppSidebar } from "@/components/layouts/_partials/AppSidebar";
-import { AppHeader } from "@/components/layouts/_partials/AppHeader";
+import { AppSidebar } from "./_partials/AppSidebar";
+import { AppHeader } from "./_partials/AppHeader";
 
-interface ProtectedLayoutProps {
+interface Props {
   children: React.ReactNode;
 }
 
-export default async function ProtectedLayout({
+export default function AppLayout({
   children,
-}: ProtectedLayoutProps) {
-  const session = await auth();
-
-  if (!session) {
-    redirect("/login");
-  }
-
+}: Props) {
   return (
     <SidebarProvider>
       <AppSidebar />
