@@ -35,12 +35,7 @@ const navigation = [
     label: "Monitoring",
     items: [
       { title: "Monitors", href: "/monitor", icon: Activity },
-      { title: "Notifications", href: "/notifications", icon: Bell },
     ],
-  },
-  {
-    label: "Account",
-    items: [{ title: "Settings", href: "/settings", icon: Settings }],
   },
 ];
 
