@@ -61,10 +61,15 @@ export function CheckResultsSheet({ monitorId }: Props) {
     );
 
     if (response.status === "success") {
-      setResults((prev) => [...prev, ...response.data]);
-      setCursor(response.nextCursor);
+      const data = response.data;
 
-      if (response.data.length < 20) {
+      if (!data) return;
+
+      setResults((prev) => [...prev, ...data.checkResults]);
+
+      setCursor(data.nextCursor);
+
+      if (data.checkResults.length < 20) {
         setHasMore(false);
       }
     }

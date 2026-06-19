@@ -1,28 +1,22 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import { getCheckResults } from "@/services/check-result.service";
-import type { CheckResultType } from "@/types/monitor.type";
-
-type GetCheckResultsResponse =
-  | { status: "error"; message: string }
-  | { status: "success"; data: CheckResultType[]; nextCursor: number | null };
+import { CheckResultsPagination, getCheckResults } from "@/services/check-result.service";
+import { AppResponseWrapper, createErrorResponse } from "@/types/common.type";
 
 export async function getCheckResultsAction(
   monitorId: number,
   cursor?: number,
-): Promise<GetCheckResultsResponse> {
+): Promise<AppResponseWrapper<CheckResultsPagination>> {
   const session = await auth();
 
   if (!session?.user?.id) {
-    return { status: "error", message: "Unauthorized" };
+    return createErrorResponse("Unauthorized");
   }
 
-  const result = await getCheckResults(monitorId, cursor);
-
-  return {
-    status: "success",
-    data: result.checkResults,
-    nextCursor: result.nextCursor,
-  };
+  return getCheckResults(
+    monitorId,
+    Number(session.user.id),
+    cursor,
+  );
 }

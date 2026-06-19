@@ -1,6 +1,16 @@
 import { prisma } from "@/lib/prisma";
 import { Monitor } from "../../generated/prisma/client";
 import { determineMonitorStatus } from "@/lib/monitor-status-config";
+import { CheckResultType } from "@/types/monitor.type";
+import {
+  AppResponseWrapper,
+  createErrorResponse,
+  createSuccessResponse,
+} from "@/types/common.type";
+export interface CheckResultsPagination {
+  checkResults: CheckResultType[];
+  nextCursor: number | null;
+}
 
 export async function applyCheckResult(monitorId: number): Promise<void> {
   const monitor = await prisma.monitor.findUnique({
@@ -86,30 +96,49 @@ async function changeMonitorStatus(monitor: Monitor) {
   }
 }
 
-export async function getCheckResults(monitorId: number, cursor?: number) {
-  const checkResults = await prisma.checkResult.findMany({
-    where: {
-      monitorId,
-    },
-
-    take: 20,
-
-    ...(cursor && {
-      skip: 1,
-      cursor: {
-        id: cursor,
+export async function getCheckResults(
+  monitorId: number,
+  userId: number,
+  cursor?: number,
+): Promise<AppResponseWrapper<CheckResultsPagination>> {
+  try {
+    const monitor = await prisma.monitor.findFirst({
+      where: {
+        id: monitorId,
+        userId,
       },
-    }),
+    });
 
-    orderBy: {
-      checkedAt: "desc",
-    },
-  });
+    if (!monitor) {
+      return createErrorResponse("Monitor not found");
+    }
 
-  const lastItem = checkResults[checkResults.length - 1];
+    const checkResults = await prisma.checkResult.findMany({
+      where: {
+        monitorId,
+      },
 
-  return {
-    checkResults,
-    nextCursor: checkResults.length > 0 ? lastItem.id : null,
-  };
+      take: 20,
+
+      ...(cursor && {
+        skip: 1,
+        cursor: {
+          id: cursor,
+        },
+      }),
+
+      orderBy: {
+        checkedAt: "desc",
+      },
+    });
+
+    const lastItem = checkResults[checkResults.length - 1];
+
+    return createSuccessResponse("Check results fetched successfully", {
+      checkResults,
+      nextCursor: lastItem?.id ?? null,
+    });
+  } catch {
+    return createErrorResponse("Failed to fetch check results");
+  }
 }
