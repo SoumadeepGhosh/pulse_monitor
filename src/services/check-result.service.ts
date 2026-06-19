@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { Monitor } from "../../generated/prisma/client";
+import { Monitor, NotificationType } from "../../generated/prisma/client";
 import { determineMonitorStatus } from "@/lib/monitor-status-config";
 import { CheckResultType } from "@/types/monitor.type";
 import {
@@ -7,10 +7,14 @@ import {
   createErrorResponse,
   createSuccessResponse,
 } from "@/types/common.type";
+import { SOCKET_EVENTS } from "@/realtime/events";
+import { publishEvent } from "@/realtime/publisher";
+import { NotificationPayload } from "@/types/realtime.type";
 export interface CheckResultsPagination {
   checkResults: CheckResultType[];
   nextCursor: number | null;
 }
+
 
 export async function applyCheckResult(monitorId: number): Promise<void> {
   const monitor = await prisma.monitor.findUnique({
@@ -84,15 +88,39 @@ async function changeMonitorStatus(monitor: Monitor) {
 
   console.log("Next status : ", nextStatus);
 
-  if (nextStatus !== monitor.status) {
+  if (
+    nextStatus !== monitor.status
+  ) {
+
     await prisma.monitor.update({
-      where: {
-        id: monitor.id,
-      },
-      data: {
-        status: nextStatus,
-      },
+        where: {
+            id: monitor.id,
+        },
+        data: {
+            status: nextStatus,
+        },
     });
+    console.log("Monitor Status changed");
+        
+    const notification =
+      await prisma.notification.create({
+        data: {
+          userId: monitor.userId,
+          type: nextStatus === "DOWN" ? NotificationType.ALERT : NotificationType.SUCCESS,
+          message: `Monitor "${monitor.name}" is now ${nextStatus}`,
+          redirectPath: `/monitors/${monitor.id}`,
+        },
+      });
+
+    await publishEvent(
+      SOCKET_EVENTS.NOTIFICATION_CREATED,
+      {
+        userId: monitor.userId.toString(),
+        notificationId: notification.id.toString(),
+        type: notification.type,
+        message: notification.message,
+      } as NotificationPayload
+    );
   }
 }
 
