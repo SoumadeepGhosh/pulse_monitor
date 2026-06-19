@@ -1,16 +1,18 @@
 "use client";
 
 import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 import { getSocket } from "@/lib/socket-client";
+import { MonitorUpdatedPayload } from "@/types/realtime.type";
+import { toast } from "sonner";
 
 export function useMonitorRealtime(
-  monitorId: string,
-  refetch: () => Promise<void>,
+  monitorId: string
 ) {
+  const router = useRouter();
 
   useEffect(() => {
-
     const socket = getSocket();
 
     socket.emit(
@@ -18,18 +20,21 @@ export function useMonitorRealtime(
       monitorId
     );
 
-    const handler = async () => {
-
-      await refetch();
+    const handler = () => {
+      router.refresh();
     };
 
     socket.on(
       "monitor:updated",
-      handler
+      (payload: MonitorUpdatedPayload) => {
+
+        if (payload.monitorId === monitorId) {
+          handler();
+        }
+      }
     );
 
     return () => {
-
       socket.emit(
         "leave-monitor-room",
         monitorId
@@ -40,6 +45,5 @@ export function useMonitorRealtime(
         handler
       );
     };
-
-  }, [monitorId, refetch]);
+  }, [monitorId, router]);
 }

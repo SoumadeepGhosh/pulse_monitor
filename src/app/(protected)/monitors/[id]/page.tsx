@@ -15,7 +15,7 @@ import { calculateMonitorMetrics } from "@/lib/monitor-metrics";
 import { SuccessFailureChart } from "@/components/monitor/_partials/monitor-analytics-section";
 import { ResponseMetricsCard } from "@/components/monitor/_partials/response-metrics-card";
 import { AvailabilityHeatmap } from "@/components/monitor/_partials/availability-heatmap";
-import { CheckResultsSheet } from "@/components/monitor/_partials/check-results-sheet";
+import { MonitorRealtime } from "@/components/monitor/monitor-realtime";
 
 interface Props {
   params: Promise<{
@@ -45,6 +45,10 @@ export default async function MonitorDetailsPage({ params }: Props) {
           </Link>
         </Button>
       </div>
+
+      <MonitorRealtime
+        monitorId={String(monitor.id)}
+      />
 
       <MonitorOverviewCard monitor={monitor} />
 

@@ -45,10 +45,13 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
         responseTime,
       },
     });
-    console.log(
-  "Running check for monitor:",
-  monitorId
-);
+
+    await publishEvent(
+      SOCKET_EVENTS.MONITOR_UPDATED,
+      {
+        monitorId: monitor.id.toString(),
+      }
+    );
   } catch (error) {
     const responseTime = Date.now() - startedAt;
 
