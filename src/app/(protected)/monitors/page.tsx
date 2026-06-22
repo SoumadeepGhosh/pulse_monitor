@@ -5,7 +5,7 @@ import { getUserMonitors } from "@/services/monitor.service";
 import { Button } from "@/components/ui/button";
 
 import { CreateMonitorDialog } from "@/components/monitor/create-monitor-dialog";
-import { MonitorTable } from "@/components/monitor/monitor-table";
+import { MonitorList } from "@/components/monitor/monitor-list";
 
 export default async function MonitorsPage() {
   const session = await auth();
@@ -36,7 +36,7 @@ export default async function MonitorsPage() {
         </CreateMonitorDialog>
       </div>
 
-      <MonitorTable
+      <MonitorList
         monitors={result.data ?? []}
       />
     </div>

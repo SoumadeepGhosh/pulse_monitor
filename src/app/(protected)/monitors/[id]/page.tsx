@@ -100,11 +100,6 @@ export default async function MonitorDetailsPage({ params }: Props) {
         monitorName={monitor.name}
         checkResults={checkResults}
       />
-      {/* <CheckHistoryTable
-        checkResults={
-          checkResults
-        }
-      /> */}
     </div>
   );
 }
