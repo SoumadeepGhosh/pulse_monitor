@@ -18,11 +18,18 @@ import {
   removeJobFromMonitorQueue,
   scheduleJobToMonitorQueue,
 } from "./queue.service";
+import { assignCriteriaToMonitor } from "./monitor-success-criteria.service";
 
 export interface MonitorDetails {
   monitor: Monitor;
   checkResults: CheckResult[];
 }
+
+type MonitorWithCriteriaIds =
+  Monitor & {
+    successCriteriaIds: number[];
+  };
+
 
 export async function getMonitorDetails(
   monitorId: number,
@@ -39,6 +46,11 @@ export async function getMonitorDetails(
         checkResults: {
           orderBy: {
             checkedAt: "desc",
+          },
+        },
+        criteria: {
+          include: {
+            successCriteria: true,
           },
         },
       },
@@ -63,14 +75,25 @@ export async function createMonitor(
   data: CreateMonitorInput,
 ): Promise<AppResponseWrapper<Monitor>> {
   try {
-    const monitor = await prisma.monitor.create({
-      data: {
+    const monitor = await prisma.$transaction(async (tx) => {
+      const monitor = await tx.monitor.create({
+        data: {
+          userId,
+          name: data.name,
+          url: data.url,
+          method: data.method,
+          intervalMinutes: data.intervalMinutes,
+        },
+      });
+
+      await assignCriteriaToMonitor(
+        tx,
         userId,
-        name: data.name,
-        url: data.url,
-        method: data.method,
-        intervalMinutes: data.intervalMinutes,
-      },
+        monitor.id,
+        data.successCriteriaIds,
+      );
+
+      return monitor;
     });
 
     await scheduleJobToMonitorQueue(
@@ -88,18 +111,40 @@ export async function createMonitor(
 
 export async function getUserMonitors(
   userId: number,
-): Promise<AppResponseWrapper<Monitor[]>> {
+): Promise<AppResponseWrapper<MonitorWithCriteriaIds[]>> {
   try {
     const monitors = await prisma.monitor.findMany({
       where: {
         userId,
       },
+      include: {
+          criteria: {
+            select: {
+              successCriteriaId: true,
+            },
+          },
+        },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    return createSuccessResponse("Monitors fetched successfully", monitors);
+    const result=
+      monitors.map(
+        ({
+          criteria,
+          ...monitor
+        }) => ({
+          ...monitor,
+
+          successCriteriaIds:
+            criteria.map(
+              (item) =>
+                item.successCriteriaId,
+            ),
+        }),
+      );
+    return createSuccessResponse("Monitors fetched successfully", result);
   } catch {
     return createErrorResponse("Failed to fetch monitors");
   }
@@ -153,17 +198,28 @@ export async function updateMonitor(
       return createErrorResponse("Monitor not found");
     }
 
-    const updatedMonitor = await prisma.monitor.update({
-      where: {
-        id: data.id,
-      },
-      data: {
-        name: data.name,
-        url: data.url,
-        method: data.method,
-        intervalMinutes: data.intervalMinutes,
-      },
-    });
+     const updatedMonitor = await prisma.$transaction(async (tx) => {
+       const updatedMonitor = await prisma.monitor.update({
+         where: {
+           id: data.id,
+         },
+         data: {
+           name: data.name,
+           url: data.url,
+           method: data.method,
+           intervalMinutes: data.intervalMinutes,
+         },
+       });
+
+       await assignCriteriaToMonitor(
+         tx,
+         userId,
+         updatedMonitor.id,
+         data.successCriteriaIds,
+       );
+
+       return updatedMonitor;
+     });
 
     await removeJobFromMonitorQueue({
       monitorId: data.id,

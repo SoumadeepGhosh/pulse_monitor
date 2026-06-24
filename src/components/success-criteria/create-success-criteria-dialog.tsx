@@ -11,17 +11,14 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 
-import { MonitorForm } from "./monitor-form";
-import { SuccessCriteriaType } from "@/types/success-criteria.type";
+import { SuccessCriteriaForm } from "./success-criteria-form";
 
 interface Props {
   children: React.ReactNode;
-  successCriteriaList: SuccessCriteriaType[]
 }
 
-export function CreateMonitorDialog({
+export function CreateSuccessCriteriaDialog({
   children,
-  successCriteriaList,
 }: Props) {
   const [open, setOpen] =
     useState(false);
@@ -39,16 +36,15 @@ export function CreateMonitorDialog({
       <DialogContent className="sm:max-w-xl">
         <DialogHeader>
           <DialogTitle>
-            Create Monitor
+            Create Success Criteria
           </DialogTitle>
 
           <DialogDescription>
-            Add a new API or website to monitor.
+            Create a reusable success criteria.
           </DialogDescription>
         </DialogHeader>
 
-        <MonitorForm
-          successCriteriaList={successCriteriaList}
+        <SuccessCriteriaForm
           onSuccess={() =>
             setOpen(false)
           }

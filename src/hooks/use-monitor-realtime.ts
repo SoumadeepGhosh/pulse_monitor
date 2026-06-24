@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 import { getSocket } from "@/lib/socket-client";
 import { MonitorUpdatedPayload } from "@/types/realtime.type";
-import { toast } from "sonner";
 
 export function useMonitorRealtime(
   monitorId: string
