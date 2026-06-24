@@ -2,8 +2,6 @@ import Link from "next/link";
 
 import { ArrowLeft } from "lucide-react";
 
-import { getMonitorDetailsAction } from "@/actions/monitor.action";
-
 import { Button } from "@/components/ui/button";
 
 import { MonitorOverviewCard } from "@/components/monitor/_partials/monitor-overview-card";
@@ -16,6 +14,8 @@ import { SuccessFailureChart } from "@/components/monitor/_partials/monitor-anal
 import { ResponseMetricsCard } from "@/components/monitor/_partials/response-metrics-card";
 import { AvailabilityHeatmap } from "@/components/monitor/_partials/availability-heatmap";
 import { MonitorRealtime } from "@/components/monitor/monitor-realtime";
+import { getMonitorDetails } from "@/services/monitor.service";
+import { auth } from "@/lib/auth";
 
 interface Props {
   params: Promise<{
@@ -25,8 +25,9 @@ interface Props {
 
 export default async function MonitorDetailsPage({ params }: Props) {
   const { id } = await params;
+  const session = await auth();
 
-  const result = await getMonitorDetailsAction(Number(id));
+  const result = await getMonitorDetails(Number(id), Number(session?.user?.id));
 
   if (result.status === "error" || !result.data) {
     return <div>{result.message}</div>;

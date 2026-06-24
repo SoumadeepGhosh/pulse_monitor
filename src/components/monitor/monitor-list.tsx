@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import type { MonitorType } from "@/types/monitor.type";
 
 import { MonitorTable } from "./monitor-table";
-import { RefreshCcw, RefreshCw } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 
 interface Props {
   monitors: MonitorType[];
