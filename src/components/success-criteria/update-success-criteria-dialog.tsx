@@ -22,38 +22,32 @@ interface Props {
   criteria: SuccessCriteriaType;
 }
 
-export function UpdateSuccessCriteriaDialog({
-  criteria,
-}: Props) {
-  const [open, setOpen] =
-    useState(false);
+export function UpdateSuccessCriteriaDialog({ criteria }: Props) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-      modal={false}
-    >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <DropdownMenuItem
-          onSelect={(e) =>
-            e.preventDefault()
-          }
+          onSelect={(e) => e.preventDefault()}
+          onClick={() => setOpen(true)}
         >
           <Pencil className="mr-2 h-4 w-4" />
           Edit
         </DropdownMenuItem>
       </DialogTrigger>
 
-      <DialogContent>
+      <DialogContent
+        className="sm:max-w-xl"
+        onInteractOutside={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onFocusOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle>
-            Update Success Criteria
-          </DialogTitle>
+          <DialogTitle>Update Success Criteria</DialogTitle>
 
           <DialogDescription>
-            Update the criteria configuration,
-            operator and expected value.
+            Update the criteria configuration, operator and expected value.
           </DialogDescription>
         </DialogHeader>
 
@@ -62,17 +56,11 @@ export function UpdateSuccessCriteriaDialog({
           defaultValues={{
             name: criteria.name,
             type: criteria.type,
-            operator:
-              criteria.operator,
-            expectedValue:
-              criteria.expectedValue,
-            jsonPath:
-              criteria.jsonPath ??
-              "",
+            operator: criteria.operator,
+            expectedValue: criteria.expectedValue,
+            jsonPath: criteria.jsonPath ?? "",
           }}
-          onSuccess={() =>
-            setOpen(false)
-          }
+          onSuccess={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>
