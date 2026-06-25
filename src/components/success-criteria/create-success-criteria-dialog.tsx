@@ -17,38 +17,27 @@ interface Props {
   children: React.ReactNode;
 }
 
-export function CreateSuccessCriteriaDialog({
-  children,
-}: Props) {
-  const [open, setOpen] =
-    useState(false);
+export function CreateSuccessCriteriaDialog({ children }: Props) {
+  const [open, setOpen] = useState(false);
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
-      modal={false}
-    >
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-
-      <DialogContent className="sm:max-w-xl">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
+<DialogContent
+  className="sm:max-w-xl"  
+  onInteractOutside={(e) => e.preventDefault()}
+  onPointerDownOutside={(e) => e.preventDefault()}
+  onFocusOutside={(e) => e.preventDefault()}
+>
         <DialogHeader>
-          <DialogTitle>
-            Create Success Criteria
-          </DialogTitle>
+          <DialogTitle>Create Success Criteria</DialogTitle>
 
           <DialogDescription>
             Create a reusable success criteria.
           </DialogDescription>
         </DialogHeader>
 
-        <SuccessCriteriaForm
-          onSuccess={() =>
-            setOpen(false)
-          }
-        />
+        <SuccessCriteriaForm onSuccess={() => setOpen(false)} />
       </DialogContent>
     </Dialog>
   );

@@ -4,7 +4,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Bell, LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { Bell, LayoutDashboard, LogOut, Settings, User } from "lucide-react";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -28,15 +28,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layouts/thems/theme-toggle";
 import { useNotifications } from "@/hooks/use-notifications";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { NotificationBell } from "@/components/notifications/notification-bell";
+import { LogoutForm } from "@/components/auth/logout-form";
+import { CurrentUser } from "@/types/user.type";
 
 interface AppHeaderProps {
-  user: {
-    id: string;
-    name?: string | null;
-    email?: string | null;
-    image?: string | null;
-  };
+  user: CurrentUser;
 }
 function formatSegment(segment: string) {
   return segment
@@ -148,14 +145,19 @@ export function AppHeader({ user }: AppHeaderProps) {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/settings" className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
-                Settings
+              <Link href="/dashboard/profile" className="cursor-pointer">
+                <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                Profile
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              Log out
+            <DropdownMenuItem
+              asChild
+              className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+            >
+              <div>
+                <LogOut className="mr-2 h-4 w-4" />
+                <LogoutForm />
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
