@@ -395,7 +395,7 @@ export default function TechStack() {
               </h2>
               <p className="text-slate-500 text-sm max-w-md leading-relaxed">
                 No boilerplate padding. Each technology solves a specific
-                problem in Montu Pilot's production pipeline.
+                problem in Montu Pilot&apos;s production pipeline.
               </p>
             </div>
 

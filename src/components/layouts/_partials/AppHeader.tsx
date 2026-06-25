@@ -33,7 +33,7 @@ import { LogoutForm } from "@/components/auth/logout-form";
 import { CurrentUser } from "@/types/user.type";
 
 interface AppHeaderProps {
-  user: CurrentUser;
+  user?: CurrentUser;
 }
 function formatSegment(segment: string) {
   return segment
@@ -128,11 +128,14 @@ export function AppHeader({ user }: AppHeaderProps) {
               className="relative h-9 w-9 rounded-full p-0 transition-shadow hover:ring-2 hover:ring-ring/40 hover:ring-offset-2 hover:ring-offset-background"
             >
               <Avatar className="h-9 w-9 border border-border/60">
-                <AvatarImage src={user.image ?? ""} alt={user.name ?? "User"} />
+                <AvatarImage
+                  src={user?.image ?? ""}
+                  alt={user?.name ?? "User"}
+                />
 
                 <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-xs font-semibold text-primary-foreground">
-                  {user.name?.charAt(0).toUpperCase() ??
-                    user.email?.charAt(0).toUpperCase() ??
+                  {user?.name?.charAt(0).toUpperCase() ??
+                    user?.email?.charAt(0).toUpperCase() ??
                     "U"}
                 </AvatarFallback>
               </Avatar>
