@@ -13,5 +13,7 @@ export const monitorQueue = new Queue(MONITOR_QUEUE, {
         type: 'exponential',
         delay: 1000,
       },
+      removeOnComplete: true,
+      removeOnFail: 1000
     },
 });

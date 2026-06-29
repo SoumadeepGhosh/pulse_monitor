@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import {
   CheckResult,
   Monitor,
+  SuccessCriteria,
 } from "../../generated/prisma/client";
 
 import {
@@ -19,17 +20,22 @@ import {
   scheduleJobToMonitorQueue,
 } from "./queue.service";
 import { assignCriteriaToMonitor } from "./monitor-success-criteria.service";
+import {
+  CRITERIA_TYPES,
+  OPERATORS,
+} from "@/validations/success-criteria.validation";
 
 export interface MonitorDetails {
-  monitor: Monitor;
-  checkResults: CheckResult[];
-}
-
-type MonitorWithCriteriaIds =
-  Monitor & {
+  monitor: Monitor & {
     successCriteriaIds: number[];
+    criteria: SuccessCriteria[];
   };
 
+  checkResults: CheckResult[];
+}
+type MonitorWithCriteriaIds = Monitor & {
+  successCriteriaIds: number[];
+};
 
 export async function getMonitorDetails(
   monitorId: number,
@@ -60,11 +66,24 @@ export async function getMonitorDetails(
       return createErrorResponse("Monitor not found");
     }
 
+    const { checkResults, criteria, ...monitorData } = monitor;
+
     return createSuccessResponse("Monitor fetched successfully", {
-      monitor,
-      checkResults: monitor.checkResults,
+      monitor: {
+        ...monitorData,
+
+        successCriteriaIds: criteria.map((item) => item.successCriteria.id),
+
+        criteria: criteria.map((item) => ({
+          ...item.successCriteria,
+          type: item.successCriteria.type as CRITERIA_TYPES,
+          operator: item.successCriteria.operator as OPERATORS,
+        })),
+      },
+
+      checkResults,
     });
-  } catch(error) {
+  } catch (error) {
     console.error("Error fetching monitor details:", error);
     return createErrorResponse("Failed to fetch monitor");
   }
@@ -118,32 +137,22 @@ export async function getUserMonitors(
         userId,
       },
       include: {
-          criteria: {
-            select: {
-              successCriteriaId: true,
-            },
+        criteria: {
+          select: {
+            successCriteriaId: true,
           },
         },
+      },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    const result=
-      monitors.map(
-        ({
-          criteria,
-          ...monitor
-        }) => ({
-          ...monitor,
+    const result = monitors.map(({ criteria, ...monitor }) => ({
+      ...monitor,
 
-          successCriteriaIds:
-            criteria.map(
-              (item) =>
-                item.successCriteriaId,
-            ),
-        }),
-      );
+      successCriteriaIds: criteria.map((item) => item.successCriteriaId),
+    }));
     return createSuccessResponse("Monitors fetched successfully", result);
   } catch {
     return createErrorResponse("Failed to fetch monitors");
@@ -198,28 +207,28 @@ export async function updateMonitor(
       return createErrorResponse("Monitor not found");
     }
 
-     const updatedMonitor = await prisma.$transaction(async (tx) => {
-       const updatedMonitor = await prisma.monitor.update({
-         where: {
-           id: data.id,
-         },
-         data: {
-           name: data.name,
-           url: data.url,
-           method: data.method,
-           intervalMinutes: data.intervalMinutes,
-         },
-       });
+    const updatedMonitor = await prisma.$transaction(async (tx) => {
+      const updatedMonitor = await prisma.monitor.update({
+        where: {
+          id: data.id,
+        },
+        data: {
+          name: data.name,
+          url: data.url,
+          method: data.method,
+          intervalMinutes: data.intervalMinutes,
+        },
+      });
 
-       await assignCriteriaToMonitor(
-         tx,
-         userId,
-         updatedMonitor.id,
-         data.successCriteriaIds,
-       );
+      await assignCriteriaToMonitor(
+        tx,
+        userId,
+        updatedMonitor.id,
+        data.successCriteriaIds,
+      );
 
-       return updatedMonitor;
-     });
+      return updatedMonitor;
+    });
 
     await removeJobFromMonitorQueue({
       monitorId: data.id,

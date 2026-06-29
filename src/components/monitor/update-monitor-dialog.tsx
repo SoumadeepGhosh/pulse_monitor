@@ -24,9 +24,10 @@ import { SuccessCriteriaType } from "@/types/success-criteria.type";
 
 interface Props {
   monitor: MonitorType;
+  children?: React.ReactNode;
 }
 
-export function UpdateMonitorDialog({ monitor }: Props) {
+export function UpdateMonitorDialog({ monitor, children }: Props) {
   const [open, setOpen] = useState(false);
 
   const [successCriteriaList, setSuccessCriteriaList] = useState<
@@ -55,10 +56,14 @@ export function UpdateMonitorDialog({ monitor }: Props) {
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
-        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-          <Pencil className="mr-2 h-4 w-4" />
-          Edit
-        </DropdownMenuItem>
+        {children ? (
+          children
+        ) : (
+          <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Edit
+          </DropdownMenuItem>
+        )}
       </DialogTrigger>
 
       <DialogContent
