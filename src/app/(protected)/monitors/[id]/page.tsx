@@ -1,43 +1,44 @@
 import Link from "next/link";
-
 import { ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-
 import { MonitorOverviewCard } from "@/components/monitor/_partials/monitor-overview-card";
 import { MonitorStatsCard } from "@/components/monitor/_partials/monitor-stats-card";
 import { ResponseTimeChart } from "@/components/monitor/_partials/response-time-chart";
 import { RecentChecksTimeline } from "@/components/monitor/_partials/recent-checks-timeline";
-
-import { calculateMonitorMetrics } from "@/lib/monitor-metrics";
 import { SuccessFailureChart } from "@/components/monitor/_partials/monitor-analytics-section";
 import { ResponseMetricsCard } from "@/components/monitor/_partials/response-metrics-card";
 import { AvailabilityHeatmap } from "@/components/monitor/_partials/availability-heatmap";
 import { MonitorRealtime } from "@/components/monitor/monitor-realtime";
+import { SuccessCriteriaTable } from "@/components/monitor/_partials/success-criteria-view-table";
+
+import { calculateMonitorMetrics } from "@/lib/monitor-metrics";
 import { getMonitorDetails } from "@/services/monitor.service";
 import { auth } from "@/lib/auth";
 
 interface Props {
-  params: Promise<{
-    id: string;
-  }>;
+  params: Promise<{ id: string }>;
 }
 
 export default async function MonitorDetailsPage({ params }: Props) {
   const { id } = await params;
   const session = await auth();
 
-  const result = await getMonitorDetails(Number(id), Number(session?.user?.id));
+  const result = await getMonitorDetails(
+    Number(id),
+    Number(session?.user?.id)
+  );
 
   if (result.status === "error" || !result.data) {
     return <div>{result.message}</div>;
   }
 
   const { monitor, checkResults } = result.data;
-
   const metrics = calculateMonitorMetrics(checkResults);
+
   return (
     <div className="space-y-6">
+      {/* Back button */}
       <div className="flex justify-end">
         <Button variant="outline" asChild>
           <Link href="/monitors">
@@ -47,36 +48,32 @@ export default async function MonitorDetailsPage({ params }: Props) {
         </Button>
       </div>
 
-      <MonitorRealtime
-        monitorId={String(monitor.id)}
-      />
+      <MonitorRealtime monitorId={String(monitor.id)} />
 
       <MonitorOverviewCard monitor={monitor} />
 
+      {/* Stats row */}
       <div className="grid gap-4 md:grid-cols-4">
         <MonitorStatsCard title="Status" value={monitor.status} />
-
         <MonitorStatsCard
           title="Average Response"
           value={`${metrics.averageResponseTime}ms`}
         />
-
         <MonitorStatsCard
           title="Successful Checks"
           value={String(metrics.successfulChecks)}
         />
-
         <MonitorStatsCard
           title="Total Checks"
           value={String(checkResults.length)}
         />
       </div>
-      {/* In monitor-details page — add items-stretch to this grid */}
+
+      {/* Charts row */}
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="lg:col-span-4">
           <ResponseTimeChart checkResults={checkResults} />
         </div>
-
         <div className="lg:col-span-1">
           <RecentChecksTimeline
             monitorId={monitor.id}
@@ -84,6 +81,8 @@ export default async function MonitorDetailsPage({ params }: Props) {
           />
         </div>
       </div>
+
+      {/* Analytics row */}
       <div className="grid gap-4 lg:grid-cols-2">
         <ResponseMetricsCard
           fastestResponse={metrics.fastestResponse}
@@ -97,6 +96,12 @@ export default async function MonitorDetailsPage({ params }: Props) {
         />
       </div>
 
+      {/* Success criteria */}
+      <SuccessCriteriaTable
+  criteria={monitor.criteria}
+/>
+
+      {/* Availability heatmap */}
       <AvailabilityHeatmap
         monitorName={monitor.name}
         checkResults={checkResults}

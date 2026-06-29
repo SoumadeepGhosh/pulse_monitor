@@ -9,7 +9,7 @@ import {
 } from "@/types/common.type";
 import { SOCKET_EVENTS } from "@/realtime/events";
 import { publishEvent } from "@/realtime/publisher";
-import { NotificationPayload } from "@/types/realtime.type";
+import { NotificationSocketPayload } from "@/types/realtime.type";
 import { getMonitorCriteria } from "./monitor-success-criteria.service";
 export interface CheckResultsPagination {
   checkResults: CheckResultType[];
@@ -142,15 +142,16 @@ async function changeMonitorStatus(
         },
       });
 
-    await publishEvent(
-      SOCKET_EVENTS.NOTIFICATION_CREATED,
-      {
-        userId: monitor.userId.toString(),
-        notificationId: notification.id.toString(),
-        type: notification.type,
-        message: notification.message,
-      } as NotificationPayload
-    );
+await publishEvent(
+  SOCKET_EVENTS.NOTIFICATION_CREATED,
+  {
+    userId: monitor.userId.toString(),
+    notificationId: notification.id.toString(),
+    type: notification.type,
+    message: notification.message,
+    redirectPath: notification.redirectPath,
+  }
+);
   }
 }
 

@@ -4,7 +4,7 @@ import { Fragment } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { Bell, LayoutDashboard, LogOut, Settings } from "lucide-react";
+import { Bell, LayoutDashboard, LogOut, Settings, User } from "lucide-react";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
@@ -24,12 +24,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/layouts/thems/theme-toggle";
 import { useNotifications } from "@/hooks/use-notifications";
-import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { NotificationBell } from "@/components/notifications/notification-bell";
+import { LogoutForm } from "@/components/auth/logout-form";
+import { CurrentUser } from "@/types/user.type";
 
+interface AppHeaderProps {
+  user?: CurrentUser;
+}
 function formatSegment(segment: string) {
   return segment
     .split("-")
@@ -37,7 +42,7 @@ function formatSegment(segment: string) {
     .join(" ");
 }
 
-export function AppHeader() {
+export function AppHeader({ user }: AppHeaderProps) {
   const pathname = usePathname();
 
   const segments = pathname
@@ -112,7 +117,7 @@ export function AppHeader() {
         <ThemeToggle />
 
         <Separator orientation="vertical" className="h-6" />
-        <NotificationBell/>
+        <NotificationBell />
 
         <Separator orientation="vertical" className="h-6" />
 
@@ -123,8 +128,15 @@ export function AppHeader() {
               className="relative h-9 w-9 rounded-full p-0 transition-shadow hover:ring-2 hover:ring-ring/40 hover:ring-offset-2 hover:ring-offset-background"
             >
               <Avatar className="h-9 w-9 border border-border/60">
-                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 font-mono text-xs font-semibold text-primary-foreground">
-                  SG
+                <AvatarImage
+                  src={user?.image ?? ""}
+                  alt={user?.name ?? "User"}
+                />
+
+                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/60 text-xs font-semibold text-primary-foreground">
+                  {user?.name?.charAt(0).toUpperCase() ??
+                    user?.email?.charAt(0).toUpperCase() ??
+                    "U"}
                 </AvatarFallback>
               </Avatar>
               <span className="absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full bg-emerald-500 ring-2 ring-background" />
@@ -136,14 +148,19 @@ export function AppHeader() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/dashboard/settings" className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4 text-muted-foreground" />
-                Settings
+              <Link href="/dashboard/profile" className="cursor-pointer">
+                <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                Profile
               </Link>
             </DropdownMenuItem>
-            <DropdownMenuItem className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive">
-              <LogOut className="mr-2 h-4 w-4" />
-              Log out
+            <DropdownMenuItem
+              asChild
+              className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+            >
+              <div>
+                <LogOut className="mr-2 h-4 w-4" />
+                <LogoutForm />
+              </div>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

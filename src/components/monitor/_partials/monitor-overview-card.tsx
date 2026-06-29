@@ -1,20 +1,19 @@
 import {
-  Activity,
   Globe,
   Wifi,
   WifiOff,
   ExternalLink,
   Timer,
   HelpCircle,
+  Pencil,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { MonitorType } from "@/types/monitor.type";
+import { UpdateMonitorDialog } from "../update-monitor-dialog";
+import { Button } from "@/components/ui/button";
 
 interface Props {
-  monitor: Omit<
-    MonitorType,
-    "successCriteriaIds"
-  >;
+  monitor: MonitorType;
 }
 
 export function MonitorOverviewCard({ monitor }: Props) {
@@ -109,17 +108,6 @@ export function MonitorOverviewCard({ monitor }: Props) {
 
         <div className="flex shrink-0 items-center gap-3">
           {/* Method chip */}
-          <div className="flex h-12 items-center gap-2 rounded-xl border border-blue-500/20 bg-blue-500/5 px-3">
-            <Activity className="h-3.5 w-3.5 text-blue-500" />
-            <div className="leading-none">
-              <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
-                Method
-              </p>
-              <p className="text-xs font-bold text-blue-600 dark:text-blue-400 mt-0.5">
-                {monitor.method}
-              </p>
-            </div>
-          </div>
 
           <div className="flex h-12 items-center gap-2 rounded-xl border border-violet-500/20 bg-violet-500/5 px-3">
             <Timer className="h-3.5 w-3.5 text-violet-500" />
@@ -132,6 +120,22 @@ export function MonitorOverviewCard({ monitor }: Props) {
               </p>
             </div>
           </div>
+          <UpdateMonitorDialog monitor={monitor}>
+            <Button
+              variant="outline"
+              className="h-12 gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10"
+            >
+              <Pencil className="h-4 w-4 text-primary" />
+
+              <div className="text-left leading-none">
+                <p className="text-[9px] uppercase tracking-widest text-muted-foreground">
+                  Monitor
+                </p>
+
+                <p className="mt-0.5 text-xs font-bold text-primary">Edit</p>
+              </div>
+            </Button>
+          </UpdateMonitorDialog>
         </div>
       </div>
     </Card>

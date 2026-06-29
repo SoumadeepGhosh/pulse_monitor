@@ -30,13 +30,18 @@ export function CreateMonitorDialog({
     <Dialog
       open={open}
       onOpenChange={setOpen}
-      modal={false}
+
     >
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
 
-      <DialogContent className="sm:max-w-xl">
+<DialogContent
+  className="sm:max-w-xl" 
+  onInteractOutside={(e) => e.preventDefault()}
+  onPointerDownOutside={(e) => e.preventDefault()}
+  onFocusOutside={(e) => e.preventDefault()}
+>
         <DialogHeader>
           <DialogTitle>
             Create Monitor
