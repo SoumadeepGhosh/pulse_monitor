@@ -8,6 +8,7 @@ import {
   Bell,
   HeartPulse,
   LayoutDashboard,
+  Mail,
   Settings,
 } from "lucide-react";
 
@@ -41,6 +42,12 @@ const navigation = [
     label: "Success Criteria",
     items: [
       { title: "Custom Criteria's", href: "/success-criteria", icon: Activity },
+    ],
+  },
+  {
+    label: "Alert Hub",
+    items: [
+      { title: "Alert Center", href: "/email-recipients", icon: Mail },
     ],
   },
 ];

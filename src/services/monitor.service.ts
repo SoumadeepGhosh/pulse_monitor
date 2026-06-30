@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import {
   CheckResult,
   Monitor,
+  EmailRecipient,
   SuccessCriteria,
 } from "../../generated/prisma/client";
 
@@ -20,6 +21,7 @@ import {
   scheduleJobToMonitorQueue,
 } from "./queue.service";
 import { assignCriteriaToMonitor } from "./monitor-success-criteria.service";
+import { assignRecipientsToMonitor } from "./monitor-email-recipient.service";
 import {
   CRITERIA_TYPES,
   OPERATORS,
@@ -28,13 +30,18 @@ import {
 export interface MonitorDetails {
   monitor: Monitor & {
     successCriteriaIds: number[];
+    recipientIds: number[];
+
     criteria: SuccessCriteria[];
+    recipients: EmailRecipient[];
   };
 
   checkResults: CheckResult[];
 }
+
 type MonitorWithCriteriaIds = Monitor & {
   successCriteriaIds: number[];
+  recipientIds: number[];
 };
 
 export async function getMonitorDetails(
@@ -54,9 +61,16 @@ export async function getMonitorDetails(
             checkedAt: "desc",
           },
         },
+
         criteria: {
           include: {
             successCriteria: true,
+          },
+        },
+
+        emailRecipients: {
+          include: {
+            recipient: true,
           },
         },
       },
@@ -66,7 +80,7 @@ export async function getMonitorDetails(
       return createErrorResponse("Monitor not found");
     }
 
-    const { checkResults, criteria, ...monitorData } = monitor;
+    const { checkResults, criteria, emailRecipients, ...monitorData } = monitor;
 
     return createSuccessResponse("Monitor fetched successfully", {
       monitor: {
@@ -74,11 +88,15 @@ export async function getMonitorDetails(
 
         successCriteriaIds: criteria.map((item) => item.successCriteria.id),
 
+        recipientIds: emailRecipients.map((item) => item.recipient.id),
+
         criteria: criteria.map((item) => ({
           ...item.successCriteria,
           type: item.successCriteria.type as CRITERIA_TYPES,
           operator: item.successCriteria.operator as OPERATORS,
         })),
+
+        recipients: emailRecipients.map((item) => item.recipient),
       },
 
       checkResults,
@@ -112,6 +130,13 @@ export async function createMonitor(
         data.successCriteriaIds,
       );
 
+      await assignRecipientsToMonitor(
+        tx,
+        userId,
+        monitor.id,
+        data.recipientIds,
+      );
+
       return monitor;
     });
 
@@ -123,9 +148,11 @@ export async function createMonitor(
     );
 
     return createSuccessResponse("Monitor created successfully", monitor);
-  } catch {
-    return createErrorResponse("Failed to create monitor");
-  }
+  }  catch (error) {
+  console.error("CREATE MONITOR ERROR:", error);
+
+  return createErrorResponse("Failed to create monitor");
+}
 }
 
 export async function getUserMonitors(
@@ -142,17 +169,31 @@ export async function getUserMonitors(
             successCriteriaId: true,
           },
         },
+
+        emailRecipients: {
+          select: {
+            recipientId: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    const result = monitors.map(({ criteria, ...monitor }) => ({
-      ...monitor,
+const result = monitors.map(
+  ({ criteria, emailRecipients, ...monitor }) => ({
+    ...monitor,
 
-      successCriteriaIds: criteria.map((item) => item.successCriteriaId),
-    }));
+    successCriteriaIds: criteria.map(
+      (item) => item.successCriteriaId,
+    ),
+
+    recipientIds: emailRecipients.map(
+      (item) => item.recipientId,
+    ),
+  }),
+);
     return createSuccessResponse("Monitors fetched successfully", result);
   } catch {
     return createErrorResponse("Failed to fetch monitors");
@@ -225,6 +266,12 @@ export async function updateMonitor(
         userId,
         updatedMonitor.id,
         data.successCriteriaIds,
+      );
+      await assignRecipientsToMonitor(
+        tx,
+        userId,
+        updatedMonitor.id,
+        data.recipientIds,
       );
 
       return updatedMonitor;

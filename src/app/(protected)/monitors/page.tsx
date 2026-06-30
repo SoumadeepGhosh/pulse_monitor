@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { CreateMonitorDialog } from "@/components/monitor/create-monitor-dialog";
 import { MonitorList } from "@/components/monitor/monitor-list";
 import { getAllCriteria } from "@/services/success-criteria.service";
+import { getAllEmailRecipients } from "@/services/email-recipient.service";
 
 export default async function MonitorsPage() {
   const session = await auth();
@@ -19,6 +20,10 @@ export default async function MonitorsPage() {
   const successCriteriaList = 
     (await getAllCriteria(Number(session?.user.id)));
 
+    const recipientList =
+  await getAllEmailRecipients(
+    Number(session?.user.id),
+  );
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -33,7 +38,10 @@ export default async function MonitorsPage() {
           </p>
         </div>
 
-        <CreateMonitorDialog successCriteriaList={successCriteriaList.data ?? []}>
+        <CreateMonitorDialog
+  successCriteriaList={successCriteriaList.data ?? []}
+  recipientList={recipientList.data ?? []}
+>
           <Button>
             Create Monitor
           </Button>

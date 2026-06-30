@@ -140,8 +140,6 @@ model MonitorEmailRecipient {
 
   previousStatus MonitorStatus @default(UNKNOWN)
 
-  consecutiveCount Int @default(0)
-
 
   assignedAt DateTime @default(now())
 

@@ -21,6 +21,8 @@ import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 
 import { MonitorForm } from "./monitor-form";
 import { SuccessCriteriaType } from "@/types/success-criteria.type";
+import { getAllEmailRecipientsAction } from "@/actions/email-recipient.action";
+import { EmailRecipientType } from "@/types/email-recipient.type";
 
 interface Props {
   monitor: MonitorType;
@@ -33,6 +35,8 @@ export function UpdateMonitorDialog({ monitor, children }: Props) {
   const [successCriteriaList, setSuccessCriteriaList] = useState<
     SuccessCriteriaType[]
   >([]);
+  const [recipientList, setRecipientList] = useState<EmailRecipientType[]>([]);
+
   const [loading, setLoading] = useState(false);
 
   const handleOpenChange = async (nextOpen: boolean) => {
@@ -42,10 +46,17 @@ export function UpdateMonitorDialog({ monitor, children }: Props) {
       try {
         setLoading(true);
 
-        const result = await getAllCriteriaAction();
+        const [criteriaResult, recipientResult] = await Promise.all([
+          getAllCriteriaAction(),
+          getAllEmailRecipientsAction(),
+        ]);
 
-        if (result.data) {
-          setSuccessCriteriaList(result.data);
+        if (criteriaResult.data) {
+          setSuccessCriteriaList(criteriaResult.data);
+        }
+
+        if (recipientResult.data) {
+          setRecipientList(recipientResult.data);
         }
       } finally {
         setLoading(false);
@@ -86,6 +97,7 @@ export function UpdateMonitorDialog({ monitor, children }: Props) {
         ) : (
           <MonitorForm
             successCriteriaList={successCriteriaList}
+            recipientList={recipientList}
             monitorId={monitor.id}
             defaultValues={{
               name: monitor.name,
@@ -93,6 +105,7 @@ export function UpdateMonitorDialog({ monitor, children }: Props) {
               method: monitor.method,
               intervalMinutes: monitor.intervalMinutes,
               successCriteriaIds: monitor.successCriteriaIds,
+              recipientIds: monitor.recipientIds,
             }}
             onSuccess={() => setOpen(false)}
           />

@@ -29,15 +29,24 @@ import {
 import { toast } from "sonner";
 import { SuccessCriteriaType } from "@/types/success-criteria.type";
 import { SuccessCriteriaCombobox } from "./_partials/success-criteris-combobox";
+import { EmailRecipientType } from "@/types/email-recipient.type";
+import { EmailRecipientCombobox } from "./_partials/email-recipient-combobox";
 
 interface Props {
-  successCriteriaList: SuccessCriteriaType[]
+  successCriteriaList: SuccessCriteriaType[];
+  recipientList: EmailRecipientType[];
   defaultValues?: Partial<CreateMonitorInput>;
   monitorId?: number;
   onSuccess?: () => void;
 }
 
-export function MonitorForm({ successCriteriaList, defaultValues, monitorId, onSuccess }: Props) {
+export function MonitorForm({
+  successCriteriaList,
+  recipientList,
+  defaultValues,
+  monitorId,
+  onSuccess,
+}: Props) {
   const router = useRouter();
 
   const form = useForm<CreateMonitorInput>({
@@ -48,11 +57,11 @@ export function MonitorForm({ successCriteriaList, defaultValues, monitorId, onS
       method: defaultValues?.method ?? "GET",
       intervalMinutes: defaultValues?.intervalMinutes ?? 5,
       successCriteriaIds: defaultValues?.successCriteriaIds ?? [],
+      recipientIds: defaultValues?.recipientIds ?? [],
     },
   });
 
   const onSubmit = async (values: CreateMonitorInput) => {
-
     const result = monitorId
       ? await updateMonitorAction({
           id: monitorId,
@@ -124,6 +133,28 @@ export function MonitorForm({ successCriteriaList, defaultValues, monitorId, onS
               <FormControl>
                 <SuccessCriteriaCombobox
                   successCriteriaList={successCriteriaList}
+                  value={field.value ?? []}
+                  onChange={field.onChange}
+                />
+              </FormControl>
+
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="recipientIds"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>
+                Email Recipients
+                <span className="text-red-500">*</span>
+              </FormLabel>
+
+              <FormControl>
+                <EmailRecipientCombobox
+                  recipientList={recipientList}
                   value={field.value ?? []}
                   onChange={field.onChange}
                 />
