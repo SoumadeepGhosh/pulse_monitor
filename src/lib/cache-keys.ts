@@ -1,11 +1,11 @@
 export const CacheKeys = {
 
-//   monitorDetails: (monitorId: number) =>
-//     `monitor:${monitorId}`,
+  monitorDetails: (monitorId: number) =>
+    `monitor:${monitorId}`,
 
   successCriteria: (userId: number) =>
     `criteria:${userId}`,
 
-//   notifications: (userId: number) =>
-//     `notifications:${userId}`,
+  notifications: (userId: number) =>
+    `notifications:${userId}`,
 };

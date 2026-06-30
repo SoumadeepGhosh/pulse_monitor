@@ -193,7 +193,7 @@ export async function getAllCriteria(
     const cached = await getCache<SuccessCriteria[]>(key);
 
     if (cached) {
-      console.log("Getting success criteria from cache");
+
         return createSuccessResponse(
         "Success criteria fetched successfully",
         cached as SuccessCriteriaType[],
@@ -211,11 +211,10 @@ export async function getAllCriteria(
         },
       });
 
-      console.log("Setting success criteria to redis");
     await setCache(
       key,
       criteria,
-      300
+      60
     );
 
     return createSuccessResponse(
