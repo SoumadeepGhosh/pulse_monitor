@@ -12,6 +12,7 @@ import { publishEvent } from "@/realtime/publisher";
 import { getMonitorCriteria } from "./monitor-success-criteria.service";
 import { deleteCache } from "./cache.service";
 import { CacheKeys } from "@/lib/cache-keys";
+import { addMonitorStatusEmailJob } from "./queue.service";
 export interface CheckResultsPagination {
   checkResults: CheckResultType[];
   nextCursor: number | null;
@@ -68,6 +69,11 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
     await deleteCache(
       CacheKeys.monitorDetails(monitorId),
     );
+
+    await addMonitorStatusEmailJob({
+      monitor: monitor,
+      recipients: ['dayadi424@gmail.com']
+    });
 
     await publishEvent(
       SOCKET_EVENTS.MONITOR_UPDATED,
