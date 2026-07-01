@@ -1,6 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { Monitor, MonitorStatus, NotificationType } from "../../generated/prisma/client";
-import { determineMonitorStatus, EvaluationInput } from "@/lib/monitor-status-config";
+import {
+  Monitor,
+  MonitorStatus,
+  NotificationType,
+} from "../../generated/prisma/client";
+import {
+  determineMonitorStatus,
+  EvaluationInput,
+} from "@/lib/monitor-status-config";
 import { CheckResultType } from "@/types/monitor.type";
 import {
   AppResponseWrapper,
@@ -17,7 +24,6 @@ export interface CheckResultsPagination {
   checkResults: CheckResultType[];
   nextCursor: number | null;
 }
-
 
 export async function applyCheckResult(monitorId: number): Promise<void> {
   const monitor = await prisma.monitor.findUnique({
@@ -40,27 +46,29 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
 
     const responseTime = Date.now() - startedAt;
 
-    const responseBody =
-      await response
-        .clone()
-        .json()
-        .catch(() => null);
+    const responseBody = await response
+      .clone()
+      .json()
+      .catch(() => null);
 
     const evaluationInput = {
-      responseStatusCode:
-        response.status,
+      responseStatusCode: response.status,
 
       responseTime,
 
       responseBody,
     };
 
-    await changeMonitorStatus(monitor, evaluationInput);
+    const status = await changeMonitorStatus(
+  monitor,
+  evaluationInput,
+);
 
     await prisma.checkResult.create({
       data: {
         monitorId,
         success: response.ok,
+        status,
         statusCode: response.status,
         responseTime,
       },
@@ -77,18 +85,16 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
     );
   } catch (error) {
     const responseTime = Date.now() - startedAt;
-
+    const status = await changeMonitorStatus(monitor);
     await prisma.checkResult.create({
       data: {
         monitorId,
         success: false,
+        status,
         responseTime,
         errorMessage: error instanceof Error ? error.message : "Unknown Error",
       },
     });
-    await changeMonitorStatus(
-      monitor,
-    );
   } finally {
     await prisma.monitor.update({
       where: {
@@ -101,67 +107,51 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
   }
 }
 
-
 async function changeMonitorStatus(
   monitor: Monitor,
   evaluationInput?: EvaluationInput,
-) {
-
+): Promise<MonitorStatus> {
   let nextStatus: MonitorStatus;
 
   if (!evaluationInput) {
     nextStatus = MonitorStatus.DOWN;
   } else {
-    const criteria =
-      await getMonitorCriteria(
-        monitor.id,
-      );
+    const criteria = await getMonitorCriteria(monitor.id);
 
-    nextStatus =
-      determineMonitorStatus(
-        evaluationInput,
-        criteria,
-      );
+    nextStatus = determineMonitorStatus(evaluationInput, criteria);
   }
 
-  if (
-    nextStatus !== monitor.status
-  ) {
-
+  if (nextStatus !== monitor.status) {
     await prisma.monitor.update({
-        where: {
-            id: monitor.id,
-        },
-        data: {
-            status: nextStatus,
-        },
+      where: {
+        id: monitor.id,
+      },
+      data: {
+        status: nextStatus,
+      },
     });
-        
-    const notification =
-      await prisma.notification.create({
-        data: {
-          userId: monitor.userId,
-          type: nextStatus === "DOWN" ? NotificationType.ERROR : NotificationType.SUCCESS,
-          message: `Monitor "${monitor.name}" is now ${nextStatus}`,
-          redirectPath: `/monitors/${monitor.id}`,
-        },
-      });
 
-    await deleteCache(
-      CacheKeys.notifications(monitor.userId),
-    );
+    const notification = await prisma.notification.create({
+      data: {
+        userId: monitor.userId,
+        type:
+          nextStatus === "DOWN"
+            ? NotificationType.ERROR
+            : NotificationType.SUCCESS,
+        message: `Monitor "${monitor.name}" is now ${nextStatus}`,
+        redirectPath: `/monitors/${monitor.id}`,
+      },
+    });
 
-await publishEvent(
-  SOCKET_EVENTS.NOTIFICATION_CREATED,
-  {
-    userId: monitor.userId.toString(),
-    notificationId: notification.id.toString(),
-    type: notification.type,
-    message: notification.message,
-    redirectPath: notification.redirectPath,
+    await publishEvent(SOCKET_EVENTS.NOTIFICATION_CREATED, {
+      userId: monitor.userId.toString(),
+      notificationId: notification.id.toString(),
+      type: notification.type,
+      message: notification.message,
+      redirectPath: notification.redirectPath,
+    });
   }
-);
-  }
+  return nextStatus;
 }
 
 export async function getCheckResults(

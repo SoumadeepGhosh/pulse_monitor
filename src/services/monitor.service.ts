@@ -171,11 +171,11 @@ export async function createMonitor(
     );
 
     return createSuccessResponse("Monitor created successfully", monitor);
-  }  catch (error) {
-  console.error("CREATE MONITOR ERROR:", error);
+  } catch (error) {
+    console.error("CREATE MONITOR ERROR:", error);
 
-  return createErrorResponse("Failed to create monitor");
-}
+    return createErrorResponse("Failed to create monitor");
+  }
 }
 
 export async function getUserMonitors(
@@ -204,19 +204,15 @@ export async function getUserMonitors(
       },
     });
 
-const result = monitors.map(
-  ({ criteria, emailRecipients, ...monitor }) => ({
-    ...monitor,
+    const result = monitors.map(
+      ({ criteria, emailRecipients, ...monitor }) => ({
+        ...monitor,
 
-    successCriteriaIds: criteria.map(
-      (item) => item.successCriteriaId,
-    ),
+        successCriteriaIds: criteria.map((item) => item.successCriteriaId),
 
-    recipientIds: emailRecipients.map(
-      (item) => item.recipientId,
-    ),
-  }),
-);
+        recipientIds: emailRecipients.map((item) => item.recipientId),
+      }),
+    );
     return createSuccessResponse("Monitors fetched successfully", result);
   } catch {
     return createErrorResponse("Failed to fetch monitors");
@@ -312,12 +308,14 @@ export async function updateMonitor(
       monitorId: data.id,
     });
 
-    await scheduleJobToMonitorQueue(
-      {
-        monitorId: data.id,
-      },
-      data.intervalMinutes,
-    );
+    if (monitor.isActive) {
+      await scheduleJobToMonitorQueue(
+        {
+          monitorId: data.id,
+        },
+        data.intervalMinutes,
+      );
+    }
 
     return createSuccessResponse(
       "Monitor updated successfully",
