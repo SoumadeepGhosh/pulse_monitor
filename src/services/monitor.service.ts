@@ -26,6 +26,8 @@ import {
   CRITERIA_TYPES,
   OPERATORS,
 } from "@/validations/success-criteria.validation";
+import { deleteCache, getCache, setCache } from "./cache.service";
+import { CacheKeys } from "@/lib/cache-keys";
 
 export interface MonitorDetails {
   monitor: Monitor & {
@@ -49,6 +51,20 @@ export async function getMonitorDetails(
   userId: number,
 ): Promise<AppResponseWrapper<MonitorDetails>> {
   try {
+
+    const key = CacheKeys.monitorDetails(monitorId);
+
+    const cached =
+      await getCache<MonitorDetails>(key);
+
+    if (cached) {
+
+      return createSuccessResponse(
+        "Monitor fetched successfully",
+        cached,
+      );
+    }
+    
     const monitor = await prisma.monitor.findFirst({
       where: {
         id: monitorId,
@@ -80,9 +96,8 @@ export async function getMonitorDetails(
       return createErrorResponse("Monitor not found");
     }
 
-    const { checkResults, criteria, emailRecipients, ...monitorData } = monitor;
-
-    return createSuccessResponse("Monitor fetched successfully", {
+    const { checkResults, criteria,emailRecipients, ...monitorData } = monitor;
+    const data = {
       monitor: {
         ...monitorData,
 
@@ -100,7 +115,15 @@ export async function getMonitorDetails(
       },
 
       checkResults,
-    });
+    }
+
+    await setCache(
+      key,
+      data,
+      60, // 1 minute
+    );
+
+    return createSuccessResponse("Monitor fetched successfully", data);
   } catch (error) {
     console.error("Error fetching monitor details:", error);
     return createErrorResponse("Failed to fetch monitor");
@@ -222,6 +245,10 @@ export async function deleteMonitor(
       },
     });
 
+    await deleteCache(
+      CacheKeys.monitorDetails(monitorId),
+    );
+
     await removeJobFromMonitorQueue({
       monitorId,
     });
@@ -276,6 +303,10 @@ export async function updateMonitor(
 
       return updatedMonitor;
     });
+
+    await deleteCache(
+      CacheKeys.monitorDetails(monitor.id),
+    );
 
     await removeJobFromMonitorQueue({
       monitorId: data.id,

@@ -15,6 +15,7 @@ import { SuccessCriteriaTable } from "@/components/monitor/_partials/success-cri
 import { calculateMonitorMetrics } from "@/lib/monitor-metrics";
 import { getMonitorDetails } from "@/services/monitor.service";
 import { auth } from "@/lib/auth";
+import { SuccessCriteriaType } from "@/types/success-criteria.type";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -97,9 +98,7 @@ export default async function MonitorDetailsPage({ params }: Props) {
       </div>
 
       {/* Success criteria */}
-      <SuccessCriteriaTable
-  criteria={monitor.criteria}
-/>
+      <SuccessCriteriaTable criteria={monitor.criteria as SuccessCriteriaType[]} />
 
       {/* Availability heatmap */}
       <AvailabilityHeatmap

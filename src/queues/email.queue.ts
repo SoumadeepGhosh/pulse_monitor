@@ -2,10 +2,10 @@ import { Queue } from "bullmq";
 
 import { redis } from "@/lib/redis";
 
-export const MONITOR_QUEUE =
-  "monitor-checks";
+export const EMAIL_QUEUE =
+  "email-send";
 
-export const monitorQueue = new Queue(MONITOR_QUEUE, {
+export const emailQueue = new Queue(EMAIL_QUEUE, {
     connection: redis as any,
     defaultJobOptions: {
       attempts: 3,
@@ -14,6 +14,5 @@ export const monitorQueue = new Queue(MONITOR_QUEUE, {
         delay: 1000,
       },
       removeOnComplete: true, // remove once job is completed for scheduler from redis
-      removeOnFail: 1000 // store only 1000 latest failed jobs
     },
 });

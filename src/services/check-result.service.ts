@@ -9,8 +9,10 @@ import {
 } from "@/types/common.type";
 import { SOCKET_EVENTS } from "@/realtime/events";
 import { publishEvent } from "@/realtime/publisher";
-import { NotificationSocketPayload } from "@/types/realtime.type";
 import { getMonitorCriteria } from "./monitor-success-criteria.service";
+import { deleteCache } from "./cache.service";
+import { CacheKeys } from "@/lib/cache-keys";
+import { addMonitorStatusEmailJob } from "./queue.service";
 export interface CheckResultsPagination {
   checkResults: CheckResultType[];
   nextCursor: number | null;
@@ -64,6 +66,9 @@ export async function applyCheckResult(monitorId: number): Promise<void> {
       },
     });
 
+    await deleteCache(
+      CacheKeys.monitorDetails(monitorId),
+    );
     await publishEvent(
       SOCKET_EVENTS.MONITOR_UPDATED,
       {
@@ -141,6 +146,10 @@ async function changeMonitorStatus(
           redirectPath: `/monitors/${monitor.id}`,
         },
       });
+
+    await deleteCache(
+      CacheKeys.notifications(monitor.userId),
+    );
 
 await publishEvent(
   SOCKET_EVENTS.NOTIFICATION_CREATED,
