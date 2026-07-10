@@ -31,7 +31,7 @@ import { EmptyNotificationState } from "./empty-notification-state";
 interface NotificationSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onUnreadChanged: () => Promise<void>;
+  onUnreadChanged?: () => Promise<void>;
 }
 
 export function NotificationSheet({
@@ -130,7 +130,7 @@ export function NotificationSheet({
       setNotifications((prev) =>
         prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)),
       );
-      await onUnreadChanged();
+      await onUnreadChanged?.();
     } catch (error) {
       console.error("Failed to mark notification as read", error);
     }
@@ -140,7 +140,7 @@ export function NotificationSheet({
     try {
       await markAllNotificationsReadAction();
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      await onUnreadChanged();
+      await onUnreadChanged?.();
     } catch (error) {
       console.error("Failed to mark notifications as read", error);
     }

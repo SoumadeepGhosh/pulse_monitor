@@ -13,8 +13,7 @@ export const CreateMonitorSchema = z.object({
     .array(z.number())
     .min(1, "Please select at least one success criteria"),
   recipientIds: z
-    .array(z.number())
-    .min(1, "Please select at least one email recipient"),
+    .array(z.number()),
 });
 
 export const UpdateMonitorSchema = CreateMonitorSchema.extend({
