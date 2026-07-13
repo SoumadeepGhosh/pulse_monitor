@@ -24,7 +24,7 @@ import { EmailRecipientType } from "@/types/email-recipient.type";
 
 export async function createEmailRecipientAction(
   data: CreateEmailRecipientInput,
-): Promise<AppResponseWrapper<EmailRecipient>> {
+): Promise<AppResponseWrapper<EmailRecipientType>> {
   const session = await auth();
 
   if (!session?.user?.id) {

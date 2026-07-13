@@ -17,7 +17,7 @@ import { EmailRecipientType } from "@/types/email-recipient.type";
 export async function createEmailRecipient(
   userId: number,
   data: CreateEmailRecipientInput,
-): Promise<AppResponseWrapper<EmailRecipient>> {
+): Promise<AppResponseWrapper<EmailRecipientType>> {
   try {
     const existing = await prisma.emailRecipient.findFirst({
       where: {
