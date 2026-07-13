@@ -24,7 +24,7 @@ function Logo() {
       </div>
       {/* Wordmark */}
       <span className="text-[14px] font-semibold text-white tracking-tight">
-        Montu<span className="text-[#00D4FF]">Pilot</span>
+        Pulse<span className="text-[#00D4FF]">Monitor</span>
       </span>
     </Link>
   );

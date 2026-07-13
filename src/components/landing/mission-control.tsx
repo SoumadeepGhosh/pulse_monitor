@@ -77,14 +77,14 @@ interface MonitorPulse {
 }
 
 const MONITORS: MonitorPulse[] = [
-  { name: "api.montu.sh", region: "iad1", status: "up" },
-  { name: "dashboard.montu.sh", region: "iad1", status: "up" },
-  { name: "webhooks.montu.sh", region: "fra1", status: "degraded" },
-  { name: "auth.montu.sh", region: "iad1", status: "up" },
-  { name: "worker.montu.sh", region: "sfo1", status: "down" },
-  { name: "cdn.montu.sh", region: "fra1", status: "up" },
-  { name: "status.montu.sh", region: "iad1", status: "up" },
-  { name: "billing.montu.sh", region: "sfo1", status: "up" },
+  { name: "api.pulse.sh", region: "iad1", status: "up" },
+  { name: "dashboard.pulse.sh", region: "iad1", status: "up" },
+  { name: "webhooks.pulse.sh", region: "fra1", status: "degraded" },
+  { name: "auth.pulse.sh", region: "iad1", status: "up" },
+  { name: "worker.pulse.sh", region: "sfo1", status: "down" },
+  { name: "cdn.pulse.sh", region: "fra1", status: "up" },
+  { name: "status.pulse.sh", region: "iad1", status: "up" },
+  { name: "billing.pulse.sh", region: "sfo1", status: "up" },
 ];
 
 const dotColor: Record<MonitorPulse["status"], string> = {
@@ -140,11 +140,11 @@ interface AlertItem {
 }
 
 const ALERT_POOL: Omit<AlertItem, "id">[] = [
-  { level: "critical", message: "worker.montu.sh — connection refused" },
-  { level: "warning", message: "webhooks.montu.sh — p95 latency 643ms" },
-  { level: "resolved", message: "worker.montu.sh — back online" },
-  { level: "warning", message: "cdn.montu.sh — elevated TTFB" },
-  { level: "critical", message: "billing.montu.sh — SSL cert expiring in 4d" },
+  { level: "critical", message: "worker.pulse.sh — connection refused" },
+  { level: "warning", message: "webhooks.pulse.sh — p95 latency 643ms" },
+  { level: "resolved", message: "worker.pulse.sh — back online" },
+  { level: "warning", message: "cdn.pulse.sh — elevated TTFB" },
+  { level: "critical", message: "billing.pulse.sh — SSL cert expiring in 4d" },
 ];
 
 const levelStyle: Record<AlertItem["level"], { color: string; icon: React.ReactNode; label: string }> = {
@@ -221,10 +221,10 @@ interface ServiceLatency {
 }
 
 const SERVICES: ServiceLatency[] = [
-  { name: "api.montu.sh", base: 84, color: "#4ade80" },
-  { name: "dashboard.montu.sh", base: 121, color: "#60a5fa" },
-  { name: "auth.montu.sh", base: 57, color: "#a78bfa" },
-  { name: "webhooks.montu.sh", base: 480, color: "#fbbf24" },
+  { name: "api.pulse.sh", base: 84, color: "#4ade80" },
+  { name: "dashboard.pulse.sh", base: 121, color: "#60a5fa" },
+  { name: "auth.pulse.sh", base: 57, color: "#a78bfa" },
+  { name: "webhooks.pulse.sh", base: 480, color: "#fbbf24" },
 ];
 
 function ResponseTimesPanel() {
@@ -274,10 +274,10 @@ function ResponseTimesPanel() {
 const EVENT_POOL = [
   "ws:connect → client #4821",
   "PUBLISH monitor:result → 1 subscriber",
-  "check:complete api.montu.sh (84ms)",
+  "check:complete api.pulse.sh (84ms)",
   "ws:emit monitor:update → 34 clients",
   "queue:job worker_3 picked up task",
-  "check:complete dashboard.montu.sh (121ms)",
+  "check:complete dashboard.pulse.sh (121ms)",
   "PUBLISH notification:new → 2 subscribers",
 ];
 
@@ -406,9 +406,9 @@ interface MissionNotif {
 }
 
 const NOTIF_POOL: Omit<MissionNotif, "id">[] = [
-  { title: "worker.montu.sh is down", sub: "5 consecutive failed checks", color: "#ef4444" },
-  { title: "webhooks.montu.sh degraded", sub: "Latency above SLA threshold", color: "#fbbf24" },
-  { title: "worker.montu.sh recovered", sub: "Back online — 92ms response", color: "#34d399" },
+  { title: "worker.pulse.sh is down", sub: "5 consecutive failed checks", color: "#ef4444" },
+  { title: "webhooks.pulse.sh degraded", sub: "Latency above SLA threshold", color: "#fbbf24" },
+  { title: "worker.pulse.sh recovered", sub: "Back online — 92ms response", color: "#34d399" },
 ];
 
 function NotificationCenterPanel() {
