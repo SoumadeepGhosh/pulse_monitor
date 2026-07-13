@@ -8,7 +8,6 @@ export async function publishEvent(
   event: string,
   payload: NotificationSocketPayload | MonitorUpdatedPayload
 ) {
-  console.log("Publishing event");
 
   await redis.publish(
     "realtime",

@@ -6,7 +6,6 @@ import { SOCKET_EVENTS } from "./events";
 
 export async function startSubscriber() {
 
-  console.log("Subscriber has been started");
   await subscriber.subscribe("realtime");
 
   subscriber.on(

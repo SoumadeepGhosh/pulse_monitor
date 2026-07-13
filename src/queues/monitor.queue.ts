@@ -13,5 +13,7 @@ export const monitorQueue = new Queue(MONITOR_QUEUE, {
         type: 'exponential',
         delay: 1000,
       },
+      removeOnComplete: true, // remove once job is completed for scheduler from redis
+      removeOnFail: 1000 // store only 1000 latest failed jobs
     },
 });

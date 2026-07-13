@@ -184,7 +184,7 @@ export function MonitorActions({ monitor }: Props) {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Deactivate Monitor</AlertDialogTitle>
+            <AlertDialogTitle>Inactive Monitor</AlertDialogTitle>
 
             <AlertDialogDescription>
               This will stop all scheduled checks for this monitor. You can
@@ -199,7 +199,7 @@ export function MonitorActions({ monitor }: Props) {
               onClick={handleDeactivate}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Deactivate
+              Inactivate
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

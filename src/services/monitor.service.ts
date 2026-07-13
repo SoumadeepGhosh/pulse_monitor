@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import {
   CheckResult,
   Monitor,
+  EmailRecipient,
+  SuccessCriteria,
 } from "../../generated/prisma/client";
 
 import {
@@ -19,23 +21,50 @@ import {
   scheduleJobToMonitorQueue,
 } from "./queue.service";
 import { assignCriteriaToMonitor } from "./monitor-success-criteria.service";
+import { assignRecipientsToMonitor } from "./monitor-email-recipient.service";
+import {
+  CRITERIA_TYPES,
+  OPERATORS,
+} from "@/validations/success-criteria.validation";
+import { deleteCache, getCache, setCache } from "./cache.service";
+import { CacheKeys } from "@/lib/cache-keys";
 
 export interface MonitorDetails {
-  monitor: Monitor;
+  monitor: Monitor & {
+    successCriteriaIds: number[];
+    recipientIds: number[];
+
+    criteria: SuccessCriteria[];
+    recipients: EmailRecipient[];
+  };
+
   checkResults: CheckResult[];
 }
 
-type MonitorWithCriteriaIds =
-  Monitor & {
-    successCriteriaIds: number[];
-  };
-
+type MonitorWithCriteriaIds = Monitor & {
+  successCriteriaIds: number[];
+  recipientIds: number[];
+};
 
 export async function getMonitorDetails(
   monitorId: number,
   userId: number,
 ): Promise<AppResponseWrapper<MonitorDetails>> {
   try {
+
+    const key = CacheKeys.monitorDetails(monitorId);
+
+    const cached =
+      await getCache<MonitorDetails>(key);
+
+    if (cached) {
+
+      return createSuccessResponse(
+        "Monitor fetched successfully",
+        cached,
+      );
+    }
+    
     const monitor = await prisma.monitor.findFirst({
       where: {
         id: monitorId,
@@ -48,9 +77,16 @@ export async function getMonitorDetails(
             checkedAt: "desc",
           },
         },
+
         criteria: {
           include: {
             successCriteria: true,
+          },
+        },
+
+        emailRecipients: {
+          include: {
+            recipient: true,
           },
         },
       },
@@ -60,11 +96,35 @@ export async function getMonitorDetails(
       return createErrorResponse("Monitor not found");
     }
 
-    return createSuccessResponse("Monitor fetched successfully", {
-      monitor,
-      checkResults: monitor.checkResults,
-    });
-  } catch(error) {
+    const { checkResults, criteria,emailRecipients, ...monitorData } = monitor;
+    const data = {
+      monitor: {
+        ...monitorData,
+
+        successCriteriaIds: criteria.map((item) => item.successCriteria.id),
+
+        recipientIds: emailRecipients.map((item) => item.recipient.id),
+
+        criteria: criteria.map((item) => ({
+          ...item.successCriteria,
+          type: item.successCriteria.type as CRITERIA_TYPES,
+          operator: item.successCriteria.operator as OPERATORS,
+        })),
+
+        recipients: emailRecipients.map((item) => item.recipient),
+      },
+
+      checkResults,
+    }
+
+    await setCache(
+      key,
+      data,
+      60, // 1 minute
+    );
+
+    return createSuccessResponse("Monitor fetched successfully", data);
+  } catch (error) {
     console.error("Error fetching monitor details:", error);
     return createErrorResponse("Failed to fetch monitor");
   }
@@ -93,6 +153,13 @@ export async function createMonitor(
         data.successCriteriaIds,
       );
 
+      await assignRecipientsToMonitor(
+        tx,
+        userId,
+        monitor.id,
+        data.recipientIds,
+      );
+
       return monitor;
     });
 
@@ -104,7 +171,9 @@ export async function createMonitor(
     );
 
     return createSuccessResponse("Monitor created successfully", monitor);
-  } catch {
+  } catch (error) {
+    console.error("CREATE MONITOR ERROR:", error);
+
     return createErrorResponse("Failed to create monitor");
   }
 }
@@ -118,32 +187,32 @@ export async function getUserMonitors(
         userId,
       },
       include: {
-          criteria: {
-            select: {
-              successCriteriaId: true,
-            },
+        criteria: {
+          select: {
+            successCriteriaId: true,
           },
         },
+
+        emailRecipients: {
+          select: {
+            recipientId: true,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    const result=
-      monitors.map(
-        ({
-          criteria,
-          ...monitor
-        }) => ({
-          ...monitor,
+    const result = monitors.map(
+      ({ criteria, emailRecipients, ...monitor }) => ({
+        ...monitor,
 
-          successCriteriaIds:
-            criteria.map(
-              (item) =>
-                item.successCriteriaId,
-            ),
-        }),
-      );
+        successCriteriaIds: criteria.map((item) => item.successCriteriaId),
+
+        recipientIds: emailRecipients.map((item) => item.recipientId),
+      }),
+    );
     return createSuccessResponse("Monitors fetched successfully", result);
   } catch {
     return createErrorResponse("Failed to fetch monitors");
@@ -172,6 +241,10 @@ export async function deleteMonitor(
       },
     });
 
+    await deleteCache(
+      CacheKeys.monitorDetails(monitorId),
+    );
+
     await removeJobFromMonitorQueue({
       monitorId,
     });
@@ -198,39 +271,51 @@ export async function updateMonitor(
       return createErrorResponse("Monitor not found");
     }
 
-     const updatedMonitor = await prisma.$transaction(async (tx) => {
-       const updatedMonitor = await prisma.monitor.update({
-         where: {
-           id: data.id,
-         },
-         data: {
-           name: data.name,
-           url: data.url,
-           method: data.method,
-           intervalMinutes: data.intervalMinutes,
-         },
-       });
+    const updatedMonitor = await prisma.$transaction(async (tx) => {
+      const updatedMonitor = await prisma.monitor.update({
+        where: {
+          id: data.id,
+        },
+        data: {
+          name: data.name,
+          url: data.url,
+          method: data.method,
+          intervalMinutes: data.intervalMinutes,
+        },
+      });
 
-       await assignCriteriaToMonitor(
-         tx,
-         userId,
-         updatedMonitor.id,
-         data.successCriteriaIds,
-       );
+      await assignCriteriaToMonitor(
+        tx,
+        userId,
+        updatedMonitor.id,
+        data.successCriteriaIds,
+      );
+      await assignRecipientsToMonitor(
+        tx,
+        userId,
+        updatedMonitor.id,
+        data.recipientIds,
+      );
 
-       return updatedMonitor;
-     });
+      return updatedMonitor;
+    });
+
+    await deleteCache(
+      CacheKeys.monitorDetails(monitor.id),
+    );
 
     await removeJobFromMonitorQueue({
       monitorId: data.id,
     });
 
-    await scheduleJobToMonitorQueue(
-      {
-        monitorId: data.id,
-      },
-      data.intervalMinutes,
-    );
+    if (monitor.isActive) {
+      await scheduleJobToMonitorQueue(
+        {
+          monitorId: data.id,
+        },
+        data.intervalMinutes,
+      );
+    }
 
     return createSuccessResponse(
       "Monitor updated successfully",

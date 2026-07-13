@@ -13,6 +13,8 @@ import {
 
 import { SuccessCriteria } from "../../generated/prisma/client";
 import { SuccessCriteriaType } from "@/types/success-criteria.type";
+import { CacheKeys } from "@/lib/cache-keys";
+import { deleteCache, getCache, setCache } from "./cache.service";
 
 
 export async function createCriteria(
@@ -45,6 +47,11 @@ export async function createCriteria(
         },
       });
 
+    // Invalidate cache
+    await deleteCache(
+      CacheKeys.successCriteria(userId),
+    );
+    
     return createSuccessResponse(
       "Success criteria created successfully",
       criteria,
@@ -103,6 +110,11 @@ export async function updateCriteria(
         },
       });
 
+    // Invalidate cache
+    await deleteCache(
+      CacheKeys.successCriteria(userId),
+    );
+
     return createSuccessResponse(
       "Success criteria updated successfully",
       criteria,
@@ -154,6 +166,11 @@ export async function deleteCriteria(
       },
     });
 
+    // Invalidate cache
+    await deleteCache(
+      CacheKeys.successCriteria(userId),
+    );
+
     return createSuccessResponse(
       "Success criteria deleted successfully",
       null,
@@ -172,7 +189,18 @@ export async function getAllCriteria(
   AppResponseWrapper<SuccessCriteriaType[]>
 > {
   try {
-    const criteria =
+    const key = CacheKeys.successCriteria(userId);
+    const cached = await getCache<SuccessCriteria[]>(key);
+
+    if (cached) {
+
+        return createSuccessResponse(
+        "Success criteria fetched successfully",
+        cached as SuccessCriteriaType[],
+      );
+    }
+
+    const criteria: SuccessCriteria[] =
       await prisma.successCriteria.findMany({
         where: {
           userId,
@@ -182,6 +210,12 @@ export async function getAllCriteria(
           createdAt: "desc",
         },
       });
+
+    await setCache(
+      key,
+      criteria,
+      60
+    );
 
     return createSuccessResponse(
       "Success criteria fetched successfully",

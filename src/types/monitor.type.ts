@@ -19,6 +19,7 @@ export interface MonitorType {
   status: MonitorStatus;
   intervalMinutes: number;
   successCriteriaIds: number[];
+  recipientIds: number[];
   isActive: boolean;
   lastCheckedAt: Date | null;
   createdAt: Date;

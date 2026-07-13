@@ -36,8 +36,16 @@ monitorWorker.on(
   "failed",
   (job, err) => {
     console.error(
-      `Job ${job?.id} failed`,
-      err,
+      `Job ${job?.id} failed in monitor worker`,
     );
   },
 );
+
+monitorWorker.on("ready", () => {
+  console.log("Monitor worker ready");
+});
+
+monitorWorker.on("error", (err) => {
+  console.error(err);
+});
+

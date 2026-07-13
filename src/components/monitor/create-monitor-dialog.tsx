@@ -13,39 +13,33 @@ import {
 
 import { MonitorForm } from "./monitor-form";
 import { SuccessCriteriaType } from "@/types/success-criteria.type";
+import { EmailRecipientType } from "@/types/email-recipient.type";
 
 interface Props {
   children: React.ReactNode;
-  successCriteriaList: SuccessCriteriaType[]
+  successCriteriaList: SuccessCriteriaType[];
+  recipientList: EmailRecipientType[];
 }
 
 export function CreateMonitorDialog({
   children,
   successCriteriaList,
+  recipientList,
 }: Props) {
-  const [open, setOpen] =
-    useState(false);
+  const [open, setOpen] = useState(false);
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={setOpen}
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>{children}</DialogTrigger>
 
-    >
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-
-<DialogContent
-  className="sm:max-w-xl" 
-  onInteractOutside={(e) => e.preventDefault()}
-  onPointerDownOutside={(e) => e.preventDefault()}
-  onFocusOutside={(e) => e.preventDefault()}
->
+      <DialogContent
+        className="sm:max-w-xl"
+        onInteractOutside={(e) => e.preventDefault()}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        onFocusOutside={(e) => e.preventDefault()}
+      >
         <DialogHeader>
-          <DialogTitle>
-            Create Monitor
-          </DialogTitle>
+          <DialogTitle>Create Monitor</DialogTitle>
 
           <DialogDescription>
             Add a new API or website to monitor.
@@ -54,9 +48,8 @@ export function CreateMonitorDialog({
 
         <MonitorForm
           successCriteriaList={successCriteriaList}
-          onSuccess={() =>
-            setOpen(false)
-          }
+          recipientList={recipientList}
+          onSuccess={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>

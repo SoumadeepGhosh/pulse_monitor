@@ -5,10 +5,9 @@ import { usePathname } from "next/navigation";
 
 import {
   Activity,
-  Bell,
   HeartPulse,
   LayoutDashboard,
-  Settings,
+  Mail,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -41,6 +40,12 @@ const navigation = [
     label: "Success Criteria",
     items: [
       { title: "Custom Criteria's", href: "/success-criteria", icon: Activity },
+    ],
+  },
+  {
+    label: "Alert Hub",
+    items: [
+      { title: "Email Recipients", href: "/email-recipients", icon: Mail },
     ],
   },
 ];

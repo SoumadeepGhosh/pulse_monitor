@@ -1,15 +1,29 @@
+import { CacheKeys } from "@/lib/cache-keys";
 import { prisma } from "@/lib/prisma";
 
 import {
   NotificationItem,
   NotificationPaginationResponse,
 } from "@/types/realtime.type";
+import { getCache, setCache } from "./cache.service";
 
 export async function getNotifications(
   userId: number,
   cursor?: number,
   limit: number = 20,
 ): Promise<NotificationPaginationResponse> {
+
+  if (!cursor) {
+    const key = CacheKeys.notifications(userId);
+
+    const cached =
+      await getCache<NotificationPaginationResponse>(key);
+
+    if (cached) {
+      return cached;
+    }
+  }
+  
   const notifications = await prisma.notification.findMany({
     where: {
       userId,
@@ -53,6 +67,18 @@ export async function getNotifications(
     redirectPath: notification.redirectPath,
   }));
 
+  if (!cursor) {
+
+    await setCache(
+      CacheKeys.notifications(userId),
+      {
+        items,
+        nextCursor,
+        hasMore: !!nextCursor,
+      },
+      60,
+    );
+  }
   return {
     items,
     nextCursor,
