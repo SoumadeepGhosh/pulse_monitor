@@ -114,7 +114,7 @@ const CARDS: DeepDiveCard[] = [
     problem:
       "Demonstrating a coherent, production-ready architecture that scales beyond a single monolith.",
     solution:
-      "Montu Pilot separates concerns across three processes: the Next.js web server, the background worker, and the Socket.IO relay. Each has a single responsibility — independently deployable and replaceable.",
+      "Pulse Monitor separates concerns across three processes: the Next.js web server, the background worker, and the Socket.IO relay. Each has a single responsibility — independently deployable and replaceable.",
     tech: ["Separation of Concerns", "Event-Driven", "Independent Processes", "Scalable"],
   },
 ];
