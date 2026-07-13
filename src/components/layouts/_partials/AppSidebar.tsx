@@ -5,11 +5,9 @@ import { usePathname } from "next/navigation";
 
 import {
   Activity,
-  Bell,
   HeartPulse,
   LayoutDashboard,
   Mail,
-  Settings,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -47,7 +45,7 @@ const navigation = [
   {
     label: "Alert Hub",
     items: [
-      { title: "Alert Center", href: "/email-recipients", icon: Mail },
+      { title: "Email Recipients", href: "/email-recipients", icon: Mail },
     ],
   },
 ];
