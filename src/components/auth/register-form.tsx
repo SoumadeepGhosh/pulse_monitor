@@ -49,7 +49,7 @@ export function RegisterForm() {
       redirect: false,
     });
 
-    router.push("/");
+    router.push("/dashboard");
     router.refresh();
   };
 

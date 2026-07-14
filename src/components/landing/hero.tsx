@@ -209,7 +209,7 @@ function CTAButtons() {
     <div className="flex flex-wrap items-center gap-3">
       {/* Primary — View Demo */}
       <Link
-        href="#mission-control"
+        href="/login"
         className={cn(
           "group inline-flex items-center gap-2 rounded-lg px-5 py-2.5",
           "bg-[#00D4FF] text-[#050816] text-sm font-semibold",
@@ -217,25 +217,25 @@ function CTAButtons() {
           "shadow-lg shadow-[#00D4FF]/20",
         )}
       >
-        View Demo
+        Login
         <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5" />
       </Link>
 
       {/* Secondary — Architecture */}
       <Link
-        href="#architecture"
+        href="/register"
         className={cn(
           "inline-flex items-center gap-2 rounded-lg px-5 py-2.5",
           "border border-white/10 bg-white/4 text-white text-sm font-medium",
           "hover:bg-white/8 hover:border-white/16 transition-all duration-150",
         )}
       >
-        View Architecture
+        Register
       </Link>
 
       {/* Ghost — GitHub */}
       <a
-        href="https://github.com"
+        href="https://github.com/SoumadeepGhosh/pulse_monitor/"
         target="_blank"
         rel="noopener noreferrer"
         className={cn(
