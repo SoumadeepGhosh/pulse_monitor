@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { ExternalLink } from "lucide-react";
+import { ArrowRight, ExternalLink } from "lucide-react";
 
 // ─── Logo ─────────────────────────────────────────────────────────────────────
 
@@ -33,10 +33,10 @@ function Logo() {
 // ─── Nav links ────────────────────────────────────────────────────────────────
 
 const NAV_LINKS = [
-  { label: "Features",      href: "#features"        },
-  { label: "Architecture",  href: "#architecture"    },
-  { label: "Dashboard",     href: "#mission-control" },
-  { label: "Analytics",     href: "#analytics"       },
+  { label: "Features", href: "#features" },
+  { label: "Architecture", href: "#architecture" },
+  { label: "Dashboard", href: "#mission-control" },
+  { label: "Analytics", href: "#analytics" },
 ];
 
 // ─── Navbar ───────────────────────────────────────────────────────────────────
@@ -63,11 +63,10 @@ export function Navbar() {
           "w-full max-w-5xl rounded-2xl border transition-all duration-300",
           scrolled
             ? "border-white/10 bg-[#050816]/90 backdrop-blur-xl shadow-xl shadow-black/30"
-            : "border-white/6 bg-[#050816]/70 backdrop-blur-lg"
+            : "border-white/6 bg-[#050816]/70 backdrop-blur-lg",
         )}
       >
         <div className="flex h-14 items-center justify-between px-4 lg:px-5">
-
           {/* ── Logo ──────────────────────────────────────── */}
           <Logo />
 
@@ -88,7 +87,7 @@ export function Navbar() {
           <div className="flex items-center gap-2">
             {/* GitHub — icon only on small, label on large */}
             <a
-              href="https://github.com"
+              href="https://github.com/SoumadeepGhosh/pulse_monitor"
               target="_blank"
               rel="noopener noreferrer"
               className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[13px] text-slate-400 hover:text-white hover:bg-white/5 transition-all duration-150 font-medium"
@@ -99,16 +98,16 @@ export function Navbar() {
 
             {/* Live Demo — primary CTA */}
             <Link
-              href="#mission-control"
+              href="/login"
               className={cn(
-                "inline-flex items-center gap-1.5 rounded-xl px-4 py-2",
-                "bg-[#00D4FF] text-[#050816] text-[13px] font-semibold",
+                "group inline-flex items-center gap-2 rounded-lg px-6 py-3",
+                "bg-[#00D4FF] text-[#050816] text-sm font-semibold",
                 "hover:bg-[#00bfe8] transition-colors duration-150",
-                "shadow-lg shadow-[#00D4FF]/20"
+                "shadow-lg shadow-[#00D4FF]/20",
               )}
             >
-              <ExternalLink className="w-3.5 h-3.5" />
-              Live Demo
+              Login
+              <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5" />
             </Link>
 
             {/* Mobile menu toggle */}
@@ -119,13 +118,33 @@ export function Navbar() {
             >
               {mobileOpen ? (
                 // X icon
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               ) : (
                 // Hamburger
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+                <svg
+                  className="w-4 h-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
                 </svg>
               )}
             </button>
@@ -156,11 +175,11 @@ export function Navbar() {
                 GitHub
               </a>
               <Link
-                href="#mission-control"
+                href="/login"
                 onClick={() => setMobileOpen(false)}
                 className="flex-1 flex items-center justify-center gap-2 rounded-lg px-3 py-2 bg-[#00D4FF] text-[#050816] text-[13px] font-semibold"
               >
-                Live Demo
+                Login
               </Link>
             </div>
           </div>

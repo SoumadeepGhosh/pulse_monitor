@@ -52,7 +52,7 @@ export function CTA() {
         {/* Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-3 mb-14">
           <Link
-            href="#mission-control"
+            href="/login"
             className={cn(
               "group inline-flex items-center gap-2 rounded-lg px-6 py-3",
               "bg-[#00D4FF] text-[#050816] text-sm font-semibold",
@@ -60,12 +60,12 @@ export function CTA() {
               "shadow-lg shadow-[#00D4FF]/20"
             )}
           >
-            View Live Demo
+            Login
             <ArrowRight className="w-4 h-4 transition-transform duration-150 group-hover:translate-x-0.5" />
           </Link>
 
           <a
-            href="https://github.com"
+            href="https://github.com/SoumadeepGhosh/pulse_monitor/"
             target="_blank"
             rel="noopener noreferrer"
             className={cn(
